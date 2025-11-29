@@ -8,62 +8,66 @@
 #include "../../common/messages.h"
 #include "../../common/network_utils.h"
 
-#define PORT 8080
+int PORT;
 
-
-void *client_handler(void *socket_desc) {
-    int sock = *(int*)socket_desc;
+void *client_handler(void *socket_desc)
+{
+    int sock = *(int *)socket_desc;
     free(socket_desc);
-    
-    // Yêu cầu Client phải gửi "HELLO\r\n" để xác nhận giao thức
+
+    // Yêu cầu Client phải gửi "HELLO" để xác nhận giao thức
     char buff[100];
-    if (recv_line(sock, buff, sizeof(buff)) > 0) {
+    if (recv_line(sock, buff, sizeof(buff)) > 0)
+    {
         printf("[DEVICE] Handshake received: %s\n", buff);
-        if (strcmp(buff, "HELLO") != 0) {
+        if (strcmp(buff, "HELLO") != 0)
+        {
             close(sock);
-            return NULL; 
+            return NULL;
         }
-    } else {
+    }
+    else
+    {
         close(sock);
         return NULL;
     }
 
     // --- Xử lý yêu cầu ---
     struct Message msg;
-    while (1) {
+    while (1)
+    {
         int n = recv_all(sock, &msg, sizeof(msg));
-        
-        if (n <= 0) {
+
+        if (n <= 0)
+        {
             printf("[DEVICE] Client disconnected.\n");
             break;
         }
 
-        switch (msg.type) {
-            case MSG_SCAN_REQUEST:
-                handle_scan_request(sock, &msg);
-                break;
-            case MSG_CONNECT_REQUEST:
-                handle_connect_request(sock, &msg);
-                break;
-            default:
-                printf("[DEVICE] Unknown MSG Type: %d\n", msg.type);
+        switch (msg.type)
+        {
+        case MSG_SCAN_REQUEST:
+            handle_scan_request(sock, &msg);
+            break;
+        case MSG_CONNECT_REQUEST:
+            handle_connect_request(sock, &msg);
+            break;
+        default:
+            printf("[DEVICE] Unknown MSG Type: %d\n", msg.type);
         }
     }
-    
-    close(sock);
-    return NULL;
-}
 
-void *simulation_thread(void *arg) {
-    printf("[SIM] Physics simulation started...\n");
-    while(1) {
-        // code ..... 
-    }
+    close(sock);
     return NULL;
 }
 
 int main()
 {
+    // --- 1. NHẬP PORT TỪ BÀN PHÍM ---
+    printf("--- DEVICE CONFIGURATION ---\n");
+    printf("Enter Port to listen: ");
+    scanf("%d", &PORT);
+
     int server_fd, *new_sock;
     struct sockaddr_in server_addr, client_addr;
     socklen_t addr_len = sizeof(client_addr);
@@ -78,13 +82,15 @@ int main()
     server_addr.sin_port = htons(PORT);
     server_addr.sin_addr.s_addr = INADDR_ANY;
 
-    bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr));
+    if (bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+    {
+        perror("Bind failed");
+        return 1;
+    }
+
     listen(server_fd, 5);
 
     printf("[DEVICE] TCP Server running on port %d\n", PORT);
-
-    // 2. Chạy luồng mô phỏng
-    pthread_create(&tid, NULL, simulation_thread, NULL);
 
     // 3. Vòng lặp Accept
     while (1)
