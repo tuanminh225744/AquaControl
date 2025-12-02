@@ -8,6 +8,14 @@
 #include "../device_server.h"
 #include "../../../common/messages.h"
 
+typedef struct
+{
+    int device_id;
+    int active;
+    double w_food;    // Lượng thức ăn Wf (kg) mỗi lần
+    int schedule[24]; // Lịch cho ăn: 1 = cho ăn, 0 = không
+} FeederDevice;
+
 void feeder_handler(int sock, struct Message *msg)
 {
     switch (msg->type)

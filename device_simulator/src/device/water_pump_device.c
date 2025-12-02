@@ -8,6 +8,16 @@
 #include "../device_server.h"
 #include "../../../common/messages.h"
 
+typedef struct
+{
+    int device_id;
+    int active;       // 1 = đang bơm, 0 = tắt
+    double flow_rate; // Lưu lượng V (m3/giờ)
+    double duration;  // Thời gian bơm T (giờ)
+} WaterPumpDevice;
+
+WaterPumpDevice WPD;
+
 void water_pump_handler(int sock, struct Message *msg)
 {
     switch (msg->type)
@@ -19,7 +29,8 @@ void water_pump_handler(int sock, struct Message *msg)
         handle_connect_request(sock, msg);
         break;
     case MSG_PUMP_CONTROL:
-        printf("control");
+        WPD.device_id = 1;
+        printf("%d", WPD.device_id);
         break;
     }
 }

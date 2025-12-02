@@ -8,6 +8,14 @@
 #include "../device_server.h"
 #include "../../../common/messages.h"
 
+typedef struct
+{
+    int device_id; // ID thiết bị
+    char type[20]; // Loại cảm biến: "salinity", "oxygen", "pH"
+    double value;  // Giá trị đo hiện tại
+    int active;    // 1 = hoạt động, 0 = tắt
+} SensorDevice;
+
 void sensor_handler(int sock, struct Message *msg)
 {
     switch (msg->type)

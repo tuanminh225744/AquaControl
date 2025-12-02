@@ -114,6 +114,17 @@ int main()
             }
             break;
 
+        case 3: // LOGIN
+            memset(&msg, 0, sizeof(msg));
+            msg.type = MSG_PUMP_CONTROL;
+            msg.app_id = 1;
+
+            strcpy(msg.payload, "");
+
+            send(sockfd, &msg, sizeof(msg), 0);
+
+            break;
+
         case 0: // EXIT
             app_running = 0;
             printf("Exiting...\n");

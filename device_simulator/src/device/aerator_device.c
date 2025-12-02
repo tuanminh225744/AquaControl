@@ -8,6 +8,14 @@
 #include "../device_server.h"
 #include "../../../common/messages.h"
 
+typedef struct
+{
+    int device_id;
+    int active;       // 1 = đang chạy, 0 = tắt
+    double rpm;       // Tốc độ quay C (vòng/phút)
+    int schedule[24]; // Lịch chạy theo giờ trong ngày: 1 = bật, 0 = tắt
+} EaratorDevice;
+
 void aerator_handler(int sock, struct Message *msg)
 {
     switch (msg->type)

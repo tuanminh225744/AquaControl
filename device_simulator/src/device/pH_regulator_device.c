@@ -8,6 +8,14 @@
 #include "../device_server.h"
 #include "../../../common/messages.h"
 
+typedef struct
+{
+    int device_id;
+    int active;
+    double pH_min; // ngưỡng pHmin
+    double w_ca;   // Lượng vôi phun mỗi lần (kg)
+} PHRegulatorDevice;
+
 void pH_regulator_handler(int sock, struct Message *msg)
 {
     switch (msg->type)
