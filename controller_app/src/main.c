@@ -75,7 +75,7 @@ int main()
             msg.app_id = 1;
             strcpy(msg.payload, "SCAN");
 
-            send_line(sockfd, &msg);
+            send(sockfd, &msg, sizeof(msg), 0);
 
             if (recv_all(sockfd, &res, sizeof(res)) > 0)
             {

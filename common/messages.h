@@ -14,6 +14,7 @@
 #define MSG_CONTROL_TOGGLE 7
 #define MSG_SET_PARAM 8
 #define MSG_GET_INFO 9
+#define MSG_PUMP_CONTROL 10
 
 #define PAYLOAD_SIZE 256
 
