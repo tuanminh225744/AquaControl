@@ -99,7 +99,7 @@ int main()
             fgets(msg.payload, sizeof(msg.payload), stdin);
             msg.payload[strcspn(msg.payload, "\n")] = 0;
 
-            send_line(sockfd, &msg);
+            send(sockfd, &msg, sizeof(msg), 0);
 
             if (recv_all(sockfd, &res, sizeof(res)) > 0)
             {
