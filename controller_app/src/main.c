@@ -7,11 +7,12 @@
 #include "../../common/network_utils.h"
 
 // Hàm dùng để xóa bộ đệm bàn phím tránh cho bị trôi lệnh khi dùng scanf
-// void clear_stdin()
-// {
-//     int c;
-//     while ((c = getchar()) != '\n' && c != EOF);
-// }
+void clear_stdin()
+{
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF)
+        ;
+}
 
 int main()
 {
@@ -26,7 +27,7 @@ int main()
 
     printf("Enter Device Port (e.g., 8080): ");
     scanf("%d", &server_port);
-    // clear_stdin();
+    clear_stdin();
     printf("[INIT] Connecting to %s:%d ...\n", server_ip, server_port);
 
     int sockfd;
@@ -61,10 +62,10 @@ int main()
 
         if (scanf("%d", &comman) != 1)
         {
-            // clear_stdin();
+            clear_stdin();
             continue;
         }
-        // clear_stdin();
+        clear_stdin();
 
         switch (comman)
         {
@@ -74,7 +75,7 @@ int main()
             msg.app_id = 1;
             strcpy(msg.payload, "SCAN");
 
-            send(sockfd, &msg, sizeof(msg), 0);
+            send_line(sockfd, &msg);
 
             if (recv_all(sockfd, &res, sizeof(res)) > 0)
             {
@@ -98,7 +99,7 @@ int main()
             fgets(msg.payload, sizeof(msg.payload), stdin);
             msg.payload[strcspn(msg.payload, "\n")] = 0;
 
-            send(sockfd, &msg, sizeof(msg), 0);
+            send_line(sockfd, &msg);
 
             if (recv_all(sockfd, &res, sizeof(res)) > 0)
             {
