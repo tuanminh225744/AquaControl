@@ -11,28 +11,42 @@
 typedef struct
 {
     int device_id;
-    int active;       // 1 = đang chạy, 0 = tắt
-    double rpm;       // Tốc độ quay C (vòng/phút)
-    int schedule[24]; // Lịch chạy theo giờ trong ngày: 1 = bật, 0 = tắt
-} EaratorDevice;
+    int active;
+    double rpm;
+    int schedule[24];
+    char device_type[20];
+    char password[20];
+    int token;
+} AeratorDevice;
 
-void aerator_handler(int sock, struct Message *msg)
+AeratorDevice AD;
+
+int *tokenPtr = &AD.token;
+int *activePtr = &AD.active;
+
+void aerator_handler(int sock, struct Message *msg, int device_id, char *password)
 {
+    AD.device_id = device_id;
+    strcpy(AD.password, password);
     switch (msg->type)
     {
-    case MSG_SCAN_REQUEST:
-        handle_scan_request(sock, msg);
+    case TYPE_SCAN:
+        handle_scan_request(sock, msg, AD.device_id, AD.device_type);
         break;
-    case MSG_CONNECT_REQUEST:
-        handle_connect_request(sock, msg);
+    case TYPE_CONNECT:
+        handle_connect_request(sock, msg, AD.device_id, AD.device_type, AD.password, tokenPtr);
         break;
-    case MSG_PUMP_CONTROL:
-        printf("control");
+    case TYPE_TURN_ON:
+        handle_turn_on_request(sock, msg, tokenPtr, activePtr);
+        break;
+    case TYPE_TURN_OFF:
+        handle_turn_off_request(sock, msg, tokenPtr, activePtr);
         break;
     }
 }
 
 int main()
 {
+    strcpy(AD.device_type, "AERATOR");
     return start_device_server(5000, aerator_handler);
 }

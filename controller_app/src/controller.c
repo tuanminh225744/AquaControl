@@ -16,7 +16,7 @@ typedef struct
     int device_id;
     int is_logged_in;
     int active;
-    char token[32];
+    int token;
 } DeviceConnection;
 
 DeviceConnection devices[MAX_DEVICES];
@@ -80,6 +80,24 @@ void connect_new_device()
     }
 
     send_line(sockfd, "HELLO");
+
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+    if (recv_all(sockfd, &res, sizeof(res)) <= 0)
+    {
+        printf("[ERROR] Failed to receive response\n");
+        close(sockfd);
+        return;
+    }
+
+    if (res.code != CODE_CONNECT_OK)
+    {
+        printf("[ERROR] Device connection failed. Code: %d\n", res.code);
+        close(sockfd);
+        return;
+    }
+
+    printf("[SUCCESS] Device connected.\n");
 
     // Lưu vào mảng
     devices[slot].active = 1;
@@ -148,7 +166,8 @@ int main()
         printf("------------------------------------\n");
         printf("3. SCAN \n");
         printf("4. LOGIN \n");
-        printf("5. CONTROL \n");
+        printf("5. TURN ON \n");
+        printf("6. TURN OFF \n");
         printf("0. Exit\n");
         printf("======================================\n");
         printf("Select: ");
@@ -254,7 +273,14 @@ int main()
                 { // 110
                     printf(">> [SUCCESS] Login OK! Info: %s\n", res.payload);
                     devices[currentId].is_logged_in = 1;
-                    // Bạn có thể tách Token từ res.payload để lưu lại dùng cho các lệnh sau
+                    // Lấy token
+                    int recv_id, recv_token;
+                    char recv_type[50];
+                    if (sscanf(res.payload, "%d %s %d", &recv_id, recv_type, &recv_token) == 3)
+                    {
+                        devices[currentId].token = recv_token;
+                        printf("   + [INFO] Received Token: %d\n", recv_token);
+                    }
                 }
                 else if (res.code == CODE_LOGIN_FAIL)
                 { // 212
@@ -271,15 +297,65 @@ int main()
             }
             break;
         }
+
+        case 5: // TURN ON
+        {
+            memset(&msg, 0, sizeof(msg));
+            msg.type = TYPE_TURN_ON;
+            msg.code = 0;
+            snprintf(msg.payload, sizeof(msg.payload), devices[currentId].token ? "%d" : "", devices[currentId].token);
+
+            send(sock, &msg, sizeof(msg), 0);
+
+            if (recv_all(sock, &res, sizeof(res)) > 0)
+            {
+                if (res.code == CODE_TURN_ON_OK)
+                { // 110
+                    printf(">> [SUCCESS] Turn on OK! %d %s\n", res.code, res.payload);
+                }
+                else
+                {
+                    printf(">> [ERROR] Turn on failed %d %s\n", res.code, res.payload);
+                }
+            }
+            break;
         }
 
-        for (int i = 0; i < MAX_DEVICES; i++)
+        case 6: // TURN OFF
         {
-            if (devices[i].active)
+            memset(&msg, 0, sizeof(msg));
+            msg.type = TYPE_TURN_OFF;
+            msg.code = 0;
+            snprintf(msg.payload, sizeof(msg.payload), devices[currentId].token ? "%d" : "", devices[currentId].token);
+
+            send(sock, &msg, sizeof(msg), 0);
+
+            if (recv_all(sock, &res, sizeof(res)) > 0)
             {
-                close(devices[i].sockfd);
+                if (res.code == CODE_TURN_OFF_OK)
+                { // 110
+                    printf(">> [SUCCESS] Turn off OK! %d %s\n", res.code, res.payload);
+                }
+                else
+                {
+                    printf(">> [ERROR] Turn off failed. %d %s\n", res.code, res.payload);
+                }
             }
+            break;
+        }
+
+        case 0:
+        {
+            for (int i = 0; i < MAX_DEVICES; i++)
+            {
+                if (devices[i].active)
+                {
+                    close(devices[i].sockfd);
+                }
+            }
+            printf("Exiting...\n");
+            return 0;
+        }
         }
     }
-    return 0;
 }

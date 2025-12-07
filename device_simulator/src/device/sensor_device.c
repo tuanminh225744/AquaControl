@@ -10,29 +10,40 @@
 
 typedef struct
 {
-    int device_id; // ID thiết bị
-    char type[20]; // Loại cảm biến: "salinity", "oxygen", "pH"
-    double value;  // Giá trị đo hiện tại
-    int active;    // 1 = hoạt động, 0 = tắt
+    int device_id;
+    int active;
+    double value;
+    char device_type[20];
+    char password[20];
+    int token;
 } SensorDevice;
 
-void sensor_handler(int sock, struct Message *msg)
+SensorDevice SD;
+int *activePtr = &SD.active;
+int *tokenPtr = &SD.token;
+
+void sensor_handler(int sock, struct Message *msg, int device_id, char *password)
 {
+    SD.device_id = device_id;
+    strcpy(SD.password, password);
     switch (msg->type)
     {
-    case MSG_SCAN_REQUEST:
-        handle_scan_request(sock, msg);
+    case TYPE_SCAN:
+        handle_scan_request(sock, msg, SD.device_id, SD.device_type);
         break;
-    case MSG_CONNECT_REQUEST:
-        handle_connect_request(sock, msg);
+    case TYPE_CONNECT:
+        handle_connect_request(sock, msg, SD.device_id, SD.device_type, SD.password, tokenPtr);
         break;
-    case MSG_PUMP_CONTROL:
-        printf("control");
+    case TYPE_TURN_ON:
+        handle_turn_on_request(sock, msg, tokenPtr, activePtr);
+        break;
+    case TYPE_TURN_OFF:
+        handle_turn_off_request(sock, msg, tokenPtr, activePtr);
         break;
     }
 }
 
 int main()
 {
-    return start_device_server(5300, sensor_handler);
+    return start_device_server(5000, sensor_handler);
 }

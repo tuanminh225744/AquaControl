@@ -12,27 +12,40 @@ typedef struct
 {
     int device_id;
     int active;
-    double w_food;    // Lượng thức ăn Wf (kg) mỗi lần
-    int schedule[24]; // Lịch cho ăn: 1 = cho ăn, 0 = không
+    double w_food;
+    int schedule[24];
+    char device_type[20];
+    char password[20];
+    int token;
 } FeederDevice;
 
-void feeder_handler(int sock, struct Message *msg)
+FeederDevice FD;
+int *activePtr = &FD.active;
+int *tokenPtr = &FD.token;
+
+void feeder_handler(int sock, struct Message *msg, int device_id, char *password)
 {
+    FD.device_id = device_id;
+    strcpy(FD.password, password);
     switch (msg->type)
     {
-    case MSG_SCAN_REQUEST:
-        handle_scan_request(sock, msg);
+    case TYPE_SCAN:
+        handle_scan_request(sock, msg, FD.device_id, FD.device_type);
         break;
-    case MSG_CONNECT_REQUEST:
-        handle_connect_request(sock, msg);
+    case TYPE_CONNECT:
+        handle_connect_request(sock, msg, FD.device_id, FD.device_type, FD.password, tokenPtr);
         break;
-    case MSG_PUMP_CONTROL:
-        printf("control");
+    case TYPE_TURN_ON:
+        handle_turn_on_request(sock, msg, tokenPtr, activePtr);
+        break;
+    case TYPE_TURN_OFF:
+        handle_turn_off_request(sock, msg, tokenPtr, activePtr);
         break;
     }
 }
 
 int main()
 {
-    return start_device_server(5100, feeder_handler);
+    strcpy(FD.device_type, "FEEDER");
+    return start_device_server(5000, feeder_handler);
 }

@@ -9,6 +9,9 @@
 #include "../../common/messages.h"
 #include "../../common/network_utils.h"
 
+int device_id;
+char password[20];
+
 // ==================== THREAD: XỬ LÝ CLIENT ====================
 void *client_thread(void *arg)
 {
@@ -31,10 +34,24 @@ void *client_thread(void *arg)
 
     if (strcmp(buff, "HELLO") != 0)
     {
+        struct Message res;
+        memset(&res, 0, sizeof(res));
+        res.type = TYPE_SCAN;
+        res.code = CODE_INVALID_MSG;
+        sprintf(res.payload, "Invalid message");
+        send(sock, &res, sizeof(res), 0);
         printf("[DEVICE] Wrong handshake. Closing.\n");
         close(sock);
         return NULL;
     }
+
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+    res.type = TYPE_SCAN;
+    res.code = CODE_CONNECT_OK;
+    sprintf(res.payload, "Device connected");
+    send(sock, &res, sizeof(res), 0);
+    printf("[DEVICE] Connected.\n");
 
     // --- Vòng lặp nhận message ---
     struct Message msg;
@@ -50,7 +67,7 @@ void *client_thread(void *arg)
         }
 
         // Gọi callback của thiết bị
-        handler(sock, &msg);
+        handler(sock, &msg, device_id, password);
     }
 
     close(sock);
@@ -88,6 +105,13 @@ int start_device_server(int port, handle_msg_fn handler)
 
     listen(server_fd, 5);
     printf("[DEVICE] Server is running.\n");
+
+    printf("Enter device ID: ");
+    scanf("%d", &device_id);
+    printf("Enter password: ");
+    scanf("%s", password);
+
+    printf("[DEVICE] Create device successful.\n");
 
     // Accept loop
     while (1)

@@ -11,31 +11,39 @@
 typedef struct
 {
     int device_id;
-    int active;       // 1 = đang bơm, 0 = tắt
-    double flow_rate; // Lưu lượng V (m3/giờ)
-    double duration;  // Thời gian bơm T (giờ)
+    int active;
+    double flow_rate;
+    double duration;
+    char device_type[20];
+    char password[20];
+    int token;
 } WaterPumpDevice;
 
 WaterPumpDevice WPD;
+int *tokenPtr = &WPD.token;
+int *activePtr = &WPD.active;
 
-void water_pump_handler(int sock, struct Message *msg)
+void water_pump_handler(int sock, struct Message *msg, int device_id, char *password)
 {
+
     switch (msg->type)
     {
-    case MSG_SCAN_REQUEST:
-        handle_scan_request(sock, msg);
+    case TYPE_SCAN:
+        handle_scan_request(sock, msg, WPD.device_id, WPD.device_type);
         break;
-    case MSG_CONNECT_REQUEST:
-        handle_connect_request(sock, msg);
+    case TYPE_CONNECT:
+        handle_connect_request(sock, msg, WPD.device_id, WPD.device_type, WPD.password, tokenPtr);
         break;
-    case MSG_PUMP_CONTROL:
-        WPD.device_id = 1;
-        printf("%d", WPD.device_id);
+    case TYPE_TURN_ON:
+        handle_turn_on_request(sock, msg, tokenPtr, activePtr);
+        break;
+    case TYPE_TURN_OFF:
+        handle_turn_off_request(sock, msg, tokenPtr, activePtr);
         break;
     }
 }
 
 int main()
 {
-    return start_device_server(5400, water_pump_handler);
+    return start_device_server(5000, water_pump_handler);
 }
