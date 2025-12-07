@@ -47,5 +47,5 @@ void pH_regulator_handler(int sock, struct Message *msg, int device_id, char *pa
 int main()
 {
     strcpy(PRD.device_type, "PHREGULATOR");
-    return start_device_server(5000, pH_regulator_handler);
+    return start_device_server(5200, pH_regulator_handler);
 }

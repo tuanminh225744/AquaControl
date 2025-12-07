@@ -47,5 +47,5 @@ void feeder_handler(int sock, struct Message *msg, int device_id, char *password
 int main()
 {
     strcpy(FD.device_type, "FEEDER");
-    return start_device_server(5000, feeder_handler);
+    return start_device_server(5100, feeder_handler);
 }

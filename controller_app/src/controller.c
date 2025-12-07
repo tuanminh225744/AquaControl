@@ -119,7 +119,7 @@ void list_device()
     {
         if (devices[i].active == 1)
         {
-            printf("%d %s:%d | ID: %d | %s %s\n", i, devices[i].ip, devices[i].port, devices[i].device_id, devices[i].is_logged_in ? "[LOGGED IN]" : "[NOT LOGIN]");
+            printf("%d %s:%d | ID: %d | %d %d\n", i, devices[i].ip, devices[i].port, devices[i].device_id, devices[i].is_logged_in);
             count++;
         }
     }
@@ -218,20 +218,23 @@ int main()
                 { // 100
                     printf(">> [FOUND] Info: %s\n", res.payload);
 
-                    char type_buff[50];
-                    int id_buff;
+                    char *type_token = strtok(res.payload, ";");
 
-                    if (sscanf(res.payload, "%[^;];%d", type_buff, &id_buff) == 2)
+                    char *id_token = strtok(NULL, ";");
+
+                    if (type_token != NULL && id_token != NULL)
                     {
-                        printf("   + Parsed Type: %s\n", type_buff);
-                        printf("   + Parsed ID:   %d\n", id_buff);
+                        int id_val = atoi(id_token);
 
-                        devices[currentId].device_id = id_buff;
-                        printf("   -> [UPDATED] Device at slot [%d] has ID: %d\n", currentId, id_buff);
+                        printf("   + Parsed Type: %s\n", type_token);
+                        printf("   + Parsed ID:   %d\n", id_val);
+
+                        devices[currentId].device_id = id_val;
+                        printf("   -> [UPDATED] Device ID saved.\n");
                     }
                     else
                     {
-                        printf("   -> [WARNING] Payload format error! Could not parse ID.\n");
+                        printf("   -> [WARNING] Payload format error!\n");
                     }
                 }
                 else if (res.code == CODE_SCAN_FAIL)
@@ -270,24 +273,15 @@ int main()
             if (recv_all(sock, &res, sizeof(res)) > 0)
             {
                 if (res.code == CODE_LOGIN_OK)
-                { // 110
-                    printf(">> [SUCCESS] Login OK! Info: %s\n", res.payload);
-                    devices[currentId].is_logged_in = 1;
-                    // Lấy token
-                    int recv_id, recv_token;
-                    char recv_type[50];
-                    if (sscanf(res.payload, "%d %s %d", &recv_id, recv_type, &recv_token) == 3)
-                    {
-                        devices[currentId].token = recv_token;
-                        printf("   + [INFO] Received Token: %d\n", recv_token);
-                    }
+                {
+                    ///// code......
                 }
                 else if (res.code == CODE_LOGIN_FAIL)
-                { // 212
+                {
                     printf(">> [FAILED] Wrong Password (212)\n");
                 }
                 else if (res.code == CODE_LOGIN_NOID)
-                { // 211
+                {
                     printf(">> [FAILED] Device ID not found (211)\n");
                 }
                 else
