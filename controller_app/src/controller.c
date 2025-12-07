@@ -16,6 +16,7 @@ typedef struct
     int device_id;
     int is_logged_in;
     int active;
+    char token[32];
 } DeviceConnection;
 
 DeviceConnection devices[MAX_DEVICES];
@@ -149,7 +150,7 @@ int main()
         printf("4. LOGIN \n");
         printf("5. CONTROL \n");
         printf("0. Exit\n");
-        printf("=======================================");
+        printf("======================================\n");
         printf("Select: ");
 
         if (scanf("%d", &comman) != 1)
@@ -184,67 +185,101 @@ int main()
         switch (comman)
         {
         case 3: // SCAN
+        {
             memset(&msg, 0, sizeof(msg));
-            msg.type = MSG_SCAN_REQUEST;
+            msg.type = TYPE_SCAN;
+            msg.code = 0;
             strcpy(msg.payload, "SCAN");
+
             send(sock, &msg, sizeof(msg), 0);
 
             if (recv_all(sock, &res, sizeof(res)) > 0)
             {
-                if (res.type == MSG_SCAN_RESPONSE)
-                {
-                    printf(">> [FOUND] ID: %d | %s\n", res.device_id, res.payload);
-                    devices[currentId].device_id = res.device_id;
+                if (res.code == CODE_SCAN_OK)
+                { // 100
+                    printf(">> [FOUND] Info: %s\n", res.payload);
+
+                    char type_buff[50];
+                    int id_buff;
+
+                    if (sscanf(res.payload, "%[^;];%d", type_buff, &id_buff) == 2)
+                    {
+                        printf("   + Parsed Type: %s\n", type_buff);
+                        printf("   + Parsed ID:   %d\n", id_buff);
+
+                        devices[currentId].device_id = id_buff;
+                        printf("   -> [UPDATED] Device at slot [%d] has ID: %d\n", currentId, id_buff);
+                    }
+                    else
+                    {
+                        printf("   -> [WARNING] Payload format error! Could not parse ID.\n");
+                    }
                 }
-            }
-            break;
-
-        case 4: // LOGIN
-            memset(&msg, 0, sizeof(msg));
-            msg.type = MSG_CONNECT_REQUEST;
-            printf("Password: ");
-            fgets(msg.payload, sizeof(msg.payload), stdin);
-            msg.payload[strcspn(msg.payload, "\n")] = 0;
-
-            send(sock, &msg, sizeof(msg), 0);
-            if (recv_all(sock, &res, sizeof(res)) > 0)
-            {
-                if (res.type == MSG_CONNECT_ACCEPT)
+                else if (res.code == CODE_SCAN_FAIL)
                 {
-                    printf(">> Login OK! Token: %s\n", res.payload);
-                    devices[currentId].is_logged_in = 1;
+                    printf(">> [INFO] No device found (210)\n");
                 }
                 else
                 {
-                    printf(">> Login Failed: %s\n", res.payload);
+                    printf(">> [ERROR] Scan failed. Code: %d\n", res.code);
                 }
             }
             break;
+        }
 
-        case 5: // CONTROL
-            if (!devices[currentId].is_logged_in)
+        case 4: // LOGIN
+        {
+            memset(&msg, 0, sizeof(msg));
+            msg.type = TYPE_CONNECT;
+            msg.code = 0;
+
+            int target_id;
+            char password[32];
+
+            printf("Enter Device ID to login: ");
+            scanf("%d", &target_id);
+            clear_stdin();
+
+            printf("Enter Password: ");
+            fgets(password, sizeof(password), stdin);
+            password[strcspn(password, "\n")] = 0;
+
+            snprintf(msg.payload, sizeof(msg.payload), "%d %s", target_id, password);
+
+            send(sock, &msg, sizeof(msg), 0);
+
+            if (recv_all(sock, &res, sizeof(res)) > 0)
             {
-                printf(">> [ERROR] Login required!\n");
-            }
-            else
-            {
-                memset(&msg, 0, sizeof(msg));
-                msg.type = MSG_PUMP_CONTROL; // Đảm bảo đã define trong messages.h
-                strcpy(msg.payload, "TOGGLE");
-                send(sock, &msg, sizeof(msg), 0);
-                printf(">> Sent Control Command.\n");
+                if (res.code == CODE_LOGIN_OK)
+                { // 110
+                    printf(">> [SUCCESS] Login OK! Info: %s\n", res.payload);
+                    devices[currentId].is_logged_in = 1;
+                    // Bạn có thể tách Token từ res.payload để lưu lại dùng cho các lệnh sau
+                }
+                else if (res.code == CODE_LOGIN_FAIL)
+                { // 212
+                    printf(">> [FAILED] Wrong Password (212)\n");
+                }
+                else if (res.code == CODE_LOGIN_NOID)
+                { // 211
+                    printf(">> [FAILED] Device ID not found (211)\n");
+                }
+                else
+                {
+                    printf(">> [ERROR] Login failed. Code: %d\n", res.code);
+                }
             }
             break;
         }
-    }
+        }
 
-    for (int i = 0; i < MAX_DEVICES; i++)
-    {
-        if (devices[i].active)
+        for (int i = 0; i < MAX_DEVICES; i++)
         {
-            close(devices[i].sockfd);
+            if (devices[i].active)
+            {
+                close(devices[i].sockfd);
+            }
         }
     }
-
     return 0;
 }

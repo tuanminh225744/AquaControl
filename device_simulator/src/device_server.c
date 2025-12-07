@@ -74,9 +74,6 @@ int start_device_server(int port, handle_msg_fn handler)
         return 1;
     }
 
-    int opt = 1;
-    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
     // Bind
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);

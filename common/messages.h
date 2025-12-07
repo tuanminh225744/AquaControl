@@ -4,25 +4,40 @@
 
 #include <stdint.h>
 
-// --- CÁC LOẠI MESSAGE (OPCODES) ---
-#define MSG_SCAN_REQUEST 1
-#define MSG_SCAN_RESPONSE 2
-#define MSG_CONNECT_REQUEST 3
-#define MSG_CONNECT_ACCEPT 4
-#define MSG_CONNECT_DENY 5
-#define MSG_SET_PASSWORD 6
-#define MSG_CONTROL_TOGGLE 7
-#define MSG_SET_PARAM 8
-#define MSG_GET_INFO 9
-#define MSG_PUMP_CONTROL 10
+// --- MESSAGE (TYPE) ---
+//
+#define TYPE_SCAN 1
+#define TYPE_CONNECT 2
+#define TYPE_CHPASS 3
+#define TYPE_GETINFO 4
+#define TYPE_CONTROL 5
+
+// --- (RESPONSE CODES) ---
+// success
+#define CODE_SCAN_OK 100
+#define CODE_LOGIN_OK 110
+#define CODE_CHPASS_OK 120
+#define CODE_GETINFO_OK 130
+#define CODE_ACTION_OK 140
+
+// fail
+#define CODE_SCAN_FAIL 210
+#define CODE_LOGIN_NOID 211
+#define CODE_LOGIN_FAIL 212
+#define CODE_LOGIN_CONNECTED 213
+#define CODE_TIMEOUT 220
+#define CODE_OLD_PASS_FAIL 221
+#define CODE_TOKEN_INVALID 222
+#define CODE_DEVICE_OFF 243
+
+#define CODE_INVALID_MSG 300
 
 #define PAYLOAD_SIZE 256
 
 struct Message
 {
     int32_t type;
-    int32_t app_id;
-    int32_t device_id;
+    int32_t code;
     char payload[PAYLOAD_SIZE];
 };
 

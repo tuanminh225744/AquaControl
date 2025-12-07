@@ -22,7 +22,7 @@ all: $(CONTROLLER) $(DEVICES)
 # ========================
 # Build controller
 # ========================
-$(CONTROLLER): $(CONTROLLER_SRC)/main.c
+$(CONTROLLER): $(CONTROLLER_SRC)/controller.c
 	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
 
 # ========================
