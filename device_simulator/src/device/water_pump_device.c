@@ -37,5 +37,5 @@ void water_pump_handler(int sock, struct Message *msg)
 
 int main()
 {
-    return start_device_server(5000, water_pump_handler);
+    return start_device_server(5400, water_pump_handler);
 }

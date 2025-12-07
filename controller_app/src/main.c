@@ -128,9 +128,8 @@ int main()
     init_device_list();
     struct Message msg, res;
     int comman;
-    int app_running = 1;
 
-    while (app_running)
+    while (1)
     {
         printf("\n========= MULTI-CONTROLLER =========\n");
         if (currentId != -1)

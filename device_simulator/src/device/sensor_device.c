@@ -34,5 +34,5 @@ void sensor_handler(int sock, struct Message *msg)
 
 int main()
 {
-    return start_device_server(5000, sensor_handler);
+    return start_device_server(5300, sensor_handler);
 }
