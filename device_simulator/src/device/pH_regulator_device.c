@@ -16,13 +16,15 @@ typedef struct
     double w_ca;
     char device_type[20];
     char password[20];
-    int token;
+    int token[MAX_CLIENTS];
+    int number_of_tokens;
     int fish_pond_id;
 } PHRegulatorDevice;
 
 PHRegulatorDevice PRD;
 int *activePtr = &PRD.active;
-int *tokenPtr = &PRD.token;
+int *tokenPtr = PRD.token;
+int *number_of_tokensPtr = &PRD.number_of_tokens;
 
 void pH_regulator_handler(int sock, struct Message *msg, int device_id, char *password)
 {
@@ -34,13 +36,13 @@ void pH_regulator_handler(int sock, struct Message *msg, int device_id, char *pa
         handle_scan_request(sock, msg, PRD.device_id, PRD.device_type);
         break;
     case TYPE_CONNECT:
-        handle_connect_request(sock, msg, PRD.device_id, PRD.device_type, PRD.password, tokenPtr);
+        handle_connect_request(sock, msg, PRD.device_id, PRD.device_type, PRD.password, tokenPtr, number_of_tokensPtr);
         break;
     case TYPE_TURN_ON:
-        handle_turn_on_request(sock, msg, tokenPtr, activePtr);
+        handle_turn_on_request(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
         break;
     case TYPE_TURN_OFF:
-        handle_turn_off_request(sock, msg, tokenPtr, activePtr);
+        handle_turn_off_request(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
         break;
     }
 }

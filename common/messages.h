@@ -37,7 +37,9 @@
 
 #define CODE_INVALID_MSG 300
 
+// --- SIZE ---
 #define PAYLOAD_SIZE 256
+#define MAX_CLIENTS 10
 
 struct Message
 {

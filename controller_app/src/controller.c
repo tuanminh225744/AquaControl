@@ -119,7 +119,7 @@ void list_device()
     {
         if (devices[i].active == 1)
         {
-            printf("%d %s:%d | ID: %d | %d %d\n", i, devices[i].ip, devices[i].port, devices[i].device_id, devices[i].is_logged_in);
+            printf("%d %s:%d | ID: %d | %d\n", i, devices[i].ip, devices[i].port, devices[i].device_id, devices[i].is_logged_in);
             count++;
         }
     }
