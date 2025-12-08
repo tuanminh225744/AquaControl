@@ -17,6 +17,7 @@ typedef struct
     char device_type[20];
     char password[20];
     int token;
+    int fish_pond_id;
 } AeratorDevice;
 
 AeratorDevice AD;
