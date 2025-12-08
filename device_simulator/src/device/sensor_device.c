@@ -12,7 +12,9 @@ typedef struct
 {
     int device_id;
     int active;
-    double value;
+    double salinity;
+    double dissolved_oxygen;
+    double pH;
     char device_type[20];
     char password[20];
     int token;
