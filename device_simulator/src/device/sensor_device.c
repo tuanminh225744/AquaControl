@@ -27,6 +27,20 @@ int *activePtr = &SD.active;
 int *tokenPtr = SD.token;
 int *number_of_tokensPtr = &SD.number_of_tokens;
 
+void create_device()
+{
+    printf("Enter Device ID: ");
+    scanf("%d", &SD.device_id);
+    printf("Enter Password: ");
+    scanf("%s", SD.password);
+    printf("Enter fish pond ID: ");
+    scanf("%d", &SD.fish_pond_id);
+    SD.active = 0;
+    SD.number_of_tokens = 0;
+    strcpy(SD.device_type, "SENSOR");
+    printf("[DEVICE] Create device successful.\n");
+}
+
 void sensor_handler(int sock, struct Message *msg, int device_id, char *password)
 {
     SD.device_id = device_id;
@@ -50,5 +64,6 @@ void sensor_handler(int sock, struct Message *msg, int device_id, char *password
 
 int main()
 {
+    create_device();
     return start_device_server(5300, sensor_handler);
 }

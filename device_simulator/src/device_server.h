@@ -4,7 +4,7 @@
 #include "../../common/messages.h"
 
 // Callback xử lý message cho từng thiết bị
-typedef void (*handle_msg_fn)(int sock, struct Message *msg, int device_id, char *password);
+typedef void (*handle_msg_fn)(int sock, struct Message *msg);
 
 // Thông tin truyền vào mỗi thread client
 struct client_info

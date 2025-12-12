@@ -8,12 +8,18 @@
 #include "../device_server.h"
 #include "../../../common/messages.h"
 
+#define MAX_FEEDING_TIMES 10
+
 typedef struct
 {
     int device_id;
     int active;
-    double w_food;
-    int schedule[24];
+    int num_feedings;
+    struct
+    {
+        int hour;
+        int minute;
+    } feeding_times[MAX_FEEDING_TIMES];
     char device_type[20];
     char password[20];
     int token[MAX_CLIENTS];
@@ -25,6 +31,63 @@ FeederDevice FD;
 int *activePtr = &FD.active;
 int *tokenPtr = FD.token;
 int *number_of_tokensPtr = &FD.number_of_tokens;
+
+void create_device()
+{
+    printf("Enter Device ID: ");
+    scanf("%d", &FD.device_id);
+    printf("Enter Password: ");
+    scanf("%s", FD.password);
+    printf("Enter fish pond ID: ");
+    scanf("%d", &FD.fish_pond_id);
+
+    int num_feed;
+    do
+    {
+        printf("Enter Number of Feedings per day (max %d): ", MAX_FEEDING_TIMES);
+        scanf("%d", &num_feed);
+        if (num_feed < 0 || num_feed > MAX_FEEDING_TIMES)
+        {
+            printf("Invalid number. Please enter a value between 0 and %d.\n", MAX_FEEDING_TIMES);
+        }
+    } while (num_feed < 0 || num_feed > MAX_FEEDING_TIMES);
+
+    FD.num_feedings = num_feed;
+
+    printf("Enter Specific Feeding Times (Hour:Minute):\n");
+    for (int i = 0; i < FD.num_feedings; i++)
+    {
+        int hour, minute;
+
+        // Nhập Giờ
+        do
+        {
+            printf("Feeding %d - Hour (0-23): ", i + 1);
+            scanf("%d", &hour);
+            if (hour < 0 || hour > 23)
+            {
+                printf("Invalid hour. Must be between 0 and 23.\n");
+            }
+        } while (hour < 0 || hour > 23);
+        FD.feeding_times[i].hour = hour;
+
+        // Nhập Phút
+        do
+        {
+            printf("Feeding %d - Minute (0-59): ", i + 1);
+            scanf("%d", &minute);
+            if (minute < 0 || minute > 59)
+            {
+                printf("Invalid minute. Must be between 0 and 59.\n");
+            }
+        } while (minute < 0 || minute > 59);
+        FD.feeding_times[i].minute = minute;
+    }
+    FD.active = 0;
+    FD.number_of_tokens = 0;
+    strcpy(FD.device_type, "FEEDER");
+    printf("[DEVICE] Create device successful.\n");
+}
 
 void feeder_handler(int sock, struct Message *msg, int device_id, char *password)
 {
@@ -49,6 +112,6 @@ void feeder_handler(int sock, struct Message *msg, int device_id, char *password
 
 int main()
 {
-    strcpy(FD.device_type, "FEEDER");
+    create_device();
     return start_device_server(5100, feeder_handler);
 }

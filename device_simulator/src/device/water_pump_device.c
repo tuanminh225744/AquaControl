@@ -26,7 +26,25 @@ int *tokenPtr = WPD.token;
 int *number_of_tokensPtr = &WPD.number_of_tokens;
 int *activePtr = &WPD.active;
 
-void water_pump_handler(int sock, struct Message *msg, int device_id, char *password)
+void create_device()
+{
+    printf("Enter Device ID: ");
+    scanf("%d", &WPD.device_id);
+    printf("Enter Password: ");
+    scanf("%s", WPD.password);
+    printf("Enter fish pond ID: ");
+    scanf("%d", &WPD.fish_pond_id);
+    printf("Enter Flow Rate (L/h): ");
+    scanf("%lf", &WPD.flow_rate);
+    printf("Enter Duration (minutes): ");
+    scanf("%lf", &WPD.duration);
+    WPD.active = 0;
+    WPD.number_of_tokens = 0;
+    strcpy(WPD.device_type, "WATERPUMP");
+    printf("[DEVICE] Create device successful.\n");
+}
+
+void water_pump_handler(int sock, struct Message *msg)
 {
 
     switch (msg->type)
@@ -48,5 +66,6 @@ void water_pump_handler(int sock, struct Message *msg, int device_id, char *pass
 
 int main()
 {
+    create_device();
     return start_device_server(5400, water_pump_handler);
 }
