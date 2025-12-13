@@ -8,6 +8,7 @@ LDFLAGS = -lpthread
 # Controller
 CONTROLLER = controller
 CONTROLLER_SRC = controller_app/src
+CONTROLLER_OBJS = $(CONTROLLER_SRC)/controller.c $(CONTROLLER_SRC)/set_device.c $(CONTROLLER_SRC)/turn_on_off.c $(COMMON_SRC)/network_utils.c
 
 # Devices
 DEVICE_SRC = device_simulator/src
@@ -22,19 +23,15 @@ all: $(CONTROLLER) $(DEVICES)
 # ========================
 # Build controller
 # ========================
-$(CONTROLLER): $(CONTROLLER_SRC)/controller.c
-	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
+$(CONTROLLER): $(CONTROLLER_OBJS)
+	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 # ========================
 # Build mỗi device riêng
 # ========================
 # Pattern: mỗi thiết bị có main riêng -> tạo 1 executable
 $(DEVICES):
-	$(CC) $(CFLAGS) \
-		$(DEVICE_SRC)/device_server.c \
-		$(DEVICE_SRC)/device.c \
- 		$(DEVICE_SRC)/device/$@_device.c \
-		-o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) $(DEVICE_SRC)/device_server.c $(DEVICE_SRC)/device.c $(DEVICE_SRC)/device/$@_device.c $(COMMON_SRC)/network_utils.c -o $@ $(LDFLAGS)
 
 # ========================
 # Xóa file build

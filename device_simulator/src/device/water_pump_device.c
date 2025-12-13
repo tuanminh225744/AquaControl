@@ -44,6 +44,37 @@ void create_device()
     printf("[DEVICE] Create device successful.\n");
 }
 
+void setup_device(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+{
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+    int req_token;
+    double req_flow_rate, req_duration;
+
+    int k = sscanf(req->payload, "%d V=%lf T=%lf", &req_token, &req_flow_rate, &req_duration);
+
+    if (k != 3)
+    {
+        res.code = CODE_INVALID_MSG;
+        strcpy(res.payload, "Invalid Format");
+    }
+    else if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    {
+        res.code = CODE_TOKEN_INVALID;
+        strcpy(res.payload, "Invalid Token");
+    }
+    else
+    {
+        res.code = CODE_SET_PUMP_DEVICE_OK;
+        WPD.flow_rate = req_flow_rate;
+        WPD.duration = req_duration;
+        strcpy(res.payload, "Settings Updated");
+    }
+
+    send(sockfd, &res, sizeof(res), 0);
+    printf("[SET DEVICE] Responded Code %d %s\n", res.code, res.payload);
+}
+
 void water_pump_handler(int sock, struct Message *msg)
 {
 

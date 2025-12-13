@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include "../../common/messages.h"
 #include "../../common/network_utils.h"
+#include "controller.h"
 
 #define MAX_DEVICES 4
 

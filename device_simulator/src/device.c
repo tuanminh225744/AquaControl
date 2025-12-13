@@ -4,6 +4,18 @@
 #include <sys/socket.h>
 #include "../../common/messages.h"
 
+int handle_check_token(int req_token, int *tokenPtr, int number_of_tokens)
+{
+    for (int i = 0; i < number_of_tokens; i++)
+    {
+        if (req_token == tokenPtr[i])
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 void handle_scan_request(int sockfd, struct Message *req, int device_id, char *device_type)
 {
     struct Message res;
@@ -61,25 +73,15 @@ void handle_turn_on_request(int sockfd, struct Message *req, int *tokenPtr, int 
     struct Message res;
     memset(&res, 0, sizeof(res));
     int req_token;
-    int token_correct = 0;
 
     int k = sscanf(req->payload, "%d", &req_token);
-
-    for (int i = 0; i < *number_of_tokensPtr; i++)
-    {
-        if (req_token == tokenPtr[i])
-        {
-            token_correct = 1;
-            break;
-        }
-    }
 
     if (k != 1)
     {
         res.code = CODE_INVALID_MSG;
         strcpy(res.payload, "Invalid Format");
     }
-    else if (!token_correct)
+    else if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
     {
         res.code = CODE_TOKEN_INVALID;
         strcpy(res.payload, "Invalid Token");
@@ -92,7 +94,7 @@ void handle_turn_on_request(int sockfd, struct Message *req, int *tokenPtr, int 
     }
 
     send(sockfd, &res, sizeof(res), 0);
-    printf("[TURN ON] Responded Code %d\n", res.code);
+    printf("[TURN ON] Responded Code %d %s\n", res.code, res.payload);
 }
 
 void handle_turn_off_request(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
@@ -100,25 +102,15 @@ void handle_turn_off_request(int sockfd, struct Message *req, int *tokenPtr, int
     struct Message res;
     memset(&res, 0, sizeof(res));
     int req_token;
-    int token_correct = 0;
 
     int k = sscanf(req->payload, "%d", &req_token);
-
-    for (int i = 0; i < *number_of_tokensPtr; i++)
-    {
-        if (req_token == tokenPtr[i])
-        {
-            token_correct = 1;
-            break;
-        }
-    }
 
     if (k != 1)
     {
         res.code = CODE_INVALID_MSG;
         strcpy(res.payload, "Invalid Format");
     }
-    else if (!token_correct)
+    else if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
     {
         res.code = CODE_TOKEN_INVALID;
         strcpy(res.payload, "Invalid Token");
@@ -131,5 +123,5 @@ void handle_turn_off_request(int sockfd, struct Message *req, int *tokenPtr, int
     }
 
     send(sockfd, &res, sizeof(res), 0);
-    printf("[TURN OFF] Responded Code %d\n", res.code);
+    printf("[TURN OFF] Responded Code %d %s\n", res.code, res.payload);
 }
