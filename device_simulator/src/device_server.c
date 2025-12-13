@@ -9,9 +9,6 @@
 #include "../../common/messages.h"
 #include "../../common/network_utils.h"
 
-int device_id;
-char password[20];
-
 // ==================== THREAD: XỬ LÝ CLIENT ====================
 void *client_thread(void *arg)
 {
@@ -67,7 +64,7 @@ void *client_thread(void *arg)
         }
 
         // Gọi callback của thiết bị
-        handler(sock, &msg, device_id, password);
+        handler(sock, &msg);
     }
 
     close(sock);
@@ -105,13 +102,6 @@ int start_device_server(int port, handle_msg_fn handler)
 
     listen(server_fd, 5);
     printf("[DEVICE] Server is running.\n");
-
-    printf("Enter device ID: ");
-    scanf("%d", &device_id);
-    printf("Enter password: ");
-    scanf("%s", password);
-
-    printf("[DEVICE] Create device successful.\n");
 
     // Accept loop
     while (1)

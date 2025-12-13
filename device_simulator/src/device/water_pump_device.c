@@ -26,7 +26,56 @@ int *tokenPtr = WPD.token;
 int *number_of_tokensPtr = &WPD.number_of_tokens;
 int *activePtr = &WPD.active;
 
-void water_pump_handler(int sock, struct Message *msg, int device_id, char *password)
+void create_device()
+{
+    printf("Enter Device ID: ");
+    scanf("%d", &WPD.device_id);
+    printf("Enter Password: ");
+    scanf("%s", WPD.password);
+    printf("Enter fish pond ID: ");
+    scanf("%d", &WPD.fish_pond_id);
+    printf("Enter Flow Rate (m3/h): ");
+    scanf("%lf", &WPD.flow_rate);
+    printf("Enter Duration (h): ");
+    scanf("%lf", &WPD.duration);
+    WPD.active = 1;
+    WPD.number_of_tokens = 0;
+    strcpy(WPD.device_type, "WATERPUMP");
+    printf("[DEVICE] Create device successful.\n");
+}
+
+void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+{
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+    int req_token;
+    double req_flow_rate, req_duration;
+
+    int k = sscanf(req->payload, "%d V=%lf T=%lf", &req_token, &req_flow_rate, &req_duration);
+
+    if (k != 3)
+    {
+        invalid_message_response(sockfd);
+        return;
+    }
+    else if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    {
+        invalid_token_response(sockfd);
+        return;
+    }
+    else
+    {
+        res.code = CODE_SET_PUMP_DEVICE_OK;
+        WPD.flow_rate = req_flow_rate;
+        WPD.duration = req_duration;
+        strcpy(res.payload, "Settings Updated");
+    }
+
+    send(sockfd, &res, sizeof(res), 0);
+    printf("[SET DEVICE] Responded Code %d %s\n", res.code, res.payload);
+}
+
+void water_pump_handler(int sock, struct Message *msg)
 {
 
     switch (msg->type)
@@ -43,10 +92,17 @@ void water_pump_handler(int sock, struct Message *msg, int device_id, char *pass
     case TYPE_TURN_OFF:
         handle_turn_off_request(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
         break;
+    case TYPE_SET_PUMP_DEVICE:
+        handle_setup_device(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        break;
+    default:
+        invalid_message_response(sock);
+        break;
     }
 }
 
 int main()
 {
+    create_device();
     return start_device_server(5400, water_pump_handler);
 }
