@@ -16,6 +16,28 @@ int handle_check_token(int req_token, int *tokenPtr, int number_of_tokens)
     return 0;
 }
 
+void invalid_message_response(int sockfd)
+{
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+
+    res.code = CODE_INVALID_MSG;
+    strcpy(res.payload, "Invalid Format");
+
+    send(sockfd, &res, sizeof(res), 0);
+}
+
+void invalid_token_response(int sockfd)
+{
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+
+    res.code = CODE_TOKEN_INVALID;
+    strcpy(res.payload, "Invalid Token");
+
+    send(sockfd, &res, sizeof(res), 0);
+}
+
 void handle_scan_request(int sockfd, struct Message *req, int device_id, char *device_type)
 {
     struct Message res;
@@ -41,8 +63,8 @@ void handle_connect_request(int sockfd, struct Message *req, int device_id, char
 
     if (sscanf(req->payload, "%d %s", &req_id, req_pass) != 2)
     {
-        res.code = CODE_INVALID_MSG;
-        strcpy(res.payload, "Invalid Format");
+        invalid_message_response(sockfd);
+        return;
     }
     else if (req_id != device_id)
     {
@@ -78,13 +100,13 @@ void handle_turn_on_request(int sockfd, struct Message *req, int *tokenPtr, int 
 
     if (k != 1)
     {
-        res.code = CODE_INVALID_MSG;
-        strcpy(res.payload, "Invalid Format");
+        invalid_message_response(sockfd);
+        return;
     }
     else if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
     {
-        res.code = CODE_TOKEN_INVALID;
-        strcpy(res.payload, "Invalid Token");
+        invalid_token_response(sockfd);
+        return;
     }
     else
     {
@@ -107,13 +129,13 @@ void handle_turn_off_request(int sockfd, struct Message *req, int *tokenPtr, int
 
     if (k != 1)
     {
-        res.code = CODE_INVALID_MSG;
-        strcpy(res.payload, "Invalid Format");
+        invalid_message_response(sockfd);
+        return;
     }
     else if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
     {
-        res.code = CODE_TOKEN_INVALID;
-        strcpy(res.payload, "Invalid Token");
+        invalid_token_response(sockfd);
+        return;
     }
     else
     {

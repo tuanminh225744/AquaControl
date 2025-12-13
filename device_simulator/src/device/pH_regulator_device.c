@@ -44,6 +44,37 @@ void create_device()
     printf("[DEVICE] Create device successful.\n");
 }
 
+void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+{
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+    int req_token;
+    double req_pH_min, req_w_ca;
+
+    int k = sscanf(req->payload, "%d PH_MIN=%lf W_CA=%lf", &req_token, &req_pH_min, &req_w_ca);
+
+    if (k != 3)
+    {
+        invalid_message_response(sockfd);
+        return;
+    }
+    else if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    {
+        invalid_token_response(sockfd);
+        return;
+    }
+    else
+    {
+        res.code = CODE_SET_PH_REGULATOR_DEVICE_OK;
+        PRD.pH_min = req_pH_min;
+        PRD.w_ca = req_w_ca;
+        strcpy(res.payload, "pH Regulator Setup Success");
+    }
+
+    send(sockfd, &res, sizeof(res), 0);
+    printf("[SETUP DEVICE] Responded Code %d %s\n", res.code, res.payload);
+}
+
 void pH_regulator_handler(int sock, struct Message *msg)
 {
     switch (msg->type)
@@ -59,6 +90,12 @@ void pH_regulator_handler(int sock, struct Message *msg)
         break;
     case TYPE_TURN_OFF:
         handle_turn_off_request(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        break;
+    case TYPE_SET_PH_REGULATOR_DEVICE:
+        handle_setup_device(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        break;
+    default:
+        invalid_message_response(sock);
         break;
     }
 }

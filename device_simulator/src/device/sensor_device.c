@@ -57,6 +57,9 @@ void sensor_handler(int sock, struct Message *msg)
     case TYPE_TURN_OFF:
         handle_turn_off_request(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
         break;
+    default:
+        invalid_message_response(sock);
+        break;
     }
 }
 
