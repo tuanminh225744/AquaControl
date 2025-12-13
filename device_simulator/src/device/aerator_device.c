@@ -8,8 +8,6 @@
 #include "../device_server.h"
 #include "../../../common/messages.h"
 
-#define MAX_SCHEDULE_INTERVALS 5
-
 typedef struct
 {
     int device_id;
@@ -95,16 +93,14 @@ void create_device()
         } while (end_minute < 0 || end_minute > 59);
         AD.intervals[i].end_minute = end_minute;
     }
-    AD.active = 0;
+    AD.active = 1;
     AD.number_of_tokens = 0;
     strcpy(AD.device_type, "AERATOR");
     printf("[DEVICE] Create device successful.\n");
 }
 
-void aerator_handler(int sock, struct Message *msg, int device_id, char *password)
+void aerator_handler(int sock, struct Message *msg)
 {
-    AD.device_id = device_id;
-    strcpy(AD.password, password);
     switch (msg->type)
     {
     case TYPE_SCAN:

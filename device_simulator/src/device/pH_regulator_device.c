@@ -38,16 +38,14 @@ void create_device()
     scanf("%lf", &PRD.pH_min);
     printf("Enter Lime weight (kg): ");
     scanf("%lf", &PRD.w_ca);
-    PRD.active = 0;
+    PRD.active = 1;
     PRD.number_of_tokens = 0;
     strcpy(PRD.device_type, "PHREGULATOR");
     printf("[DEVICE] Create device successful.\n");
 }
 
-void pH_regulator_handler(int sock, struct Message *msg, int device_id, char *password)
+void pH_regulator_handler(int sock, struct Message *msg)
 {
-    PRD.device_id = device_id;
-    strcpy(PRD.password, password);
     switch (msg->type)
     {
     case TYPE_SCAN:

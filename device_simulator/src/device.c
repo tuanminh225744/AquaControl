@@ -14,7 +14,7 @@ void handle_scan_request(int sockfd, struct Message *req, int device_id, char *d
     sprintf(res.payload, "%s;%d", device_type, device_id);
 
     send(sockfd, &res, sizeof(res), 0);
-    printf(" -> [SCAN] Responded Code %d\n", res.code);
+    printf("[SCAN] Responded Code %d\n", res.code);
 }
 
 void handle_connect_request(int sockfd, struct Message *req, int device_id, char *device_type, char *password, int *tokenPtr, int *number_of_tokensPtr)
@@ -50,7 +50,7 @@ void handle_connect_request(int sockfd, struct Message *req, int device_id, char
         snprintf(res.payload, sizeof(res.payload), "%d %s %d", device_id, device_type, token);
         tokenPtr[*number_of_tokensPtr] = token;
         (*number_of_tokensPtr)++;
-        printf(" -> [LOGIN] Success. Token: %d\n", token);
+        printf("[LOGIN] Success. Token: %d\n", token);
     }
 
     send(sockfd, &res, sizeof(res), 0);
@@ -92,7 +92,7 @@ void handle_turn_on_request(int sockfd, struct Message *req, int *tokenPtr, int 
     }
 
     send(sockfd, &res, sizeof(res), 0);
-    printf(" -> [TURN ON] Responded Code %d\n", res.code);
+    printf("[TURN ON] Responded Code %d\n", res.code);
 }
 
 void handle_turn_off_request(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
@@ -131,5 +131,5 @@ void handle_turn_off_request(int sockfd, struct Message *req, int *tokenPtr, int
     }
 
     send(sockfd, &res, sizeof(res), 0);
-    printf(" -> [TURN OFF] Responded Code %d\n", res.code);
+    printf("[TURN OFF] Responded Code %d\n", res.code);
 }

@@ -34,11 +34,11 @@ void create_device()
     scanf("%s", WPD.password);
     printf("Enter fish pond ID: ");
     scanf("%d", &WPD.fish_pond_id);
-    printf("Enter Flow Rate (L/h): ");
+    printf("Enter Flow Rate (m3/h): ");
     scanf("%lf", &WPD.flow_rate);
-    printf("Enter Duration (minutes): ");
+    printf("Enter Duration (h): ");
     scanf("%lf", &WPD.duration);
-    WPD.active = 0;
+    WPD.active = 1;
     WPD.number_of_tokens = 0;
     strcpy(WPD.device_type, "WATERPUMP");
     printf("[DEVICE] Create device successful.\n");

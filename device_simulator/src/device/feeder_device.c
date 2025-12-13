@@ -83,16 +83,14 @@ void create_device()
         } while (minute < 0 || minute > 59);
         FD.feeding_times[i].minute = minute;
     }
-    FD.active = 0;
+    FD.active = 1;
     FD.number_of_tokens = 0;
     strcpy(FD.device_type, "FEEDER");
     printf("[DEVICE] Create device successful.\n");
 }
 
-void feeder_handler(int sock, struct Message *msg, int device_id, char *password)
+void feeder_handler(int sock, struct Message *msg)
 {
-    FD.device_id = device_id;
-    strcpy(FD.password, password);
     switch (msg->type)
     {
     case TYPE_SCAN:

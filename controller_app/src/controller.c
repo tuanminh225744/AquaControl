@@ -17,6 +17,7 @@ typedef struct
     int is_logged_in;
     int active;
     int token;
+    char device_type[20];
 } DeviceConnection;
 
 DeviceConnection devices[MAX_DEVICES];
@@ -108,7 +109,7 @@ void connect_new_device()
 
     // Tự động chọn thiết bị này
     currentId = slot;
-    printf(">> [SUCCESS] Connected at slot [%d]\n", slot);
+    printf("[SUCCESS] Connected at slot [%d]\n", slot);
 }
 
 void list_device()
@@ -164,10 +165,14 @@ int main()
         printf("1. Connect new device\n");
         printf("2. List of devices\n");
         printf("------------------------------------\n");
-        printf("3. SCAN \n");
-        printf("4. LOGIN \n");
-        printf("5. TURN ON \n");
-        printf("6. TURN OFF \n");
+        printf("3. Scan \n");
+        printf("4. Login \n");
+        printf("5. Turn on \n");
+        printf("6. Turn off \n");
+        printf("7. Set pump device \n");
+        printf("8. Set aerator device \n");
+        printf("9. Set feed device \n");
+        printf("10. Set PH regulator device \n");
         printf("0. Exit\n");
         printf("======================================\n");
         printf("Select: ");
@@ -196,7 +201,7 @@ int main()
 
         if (currentId == -1)
         {
-            printf(">> [ERROR] Chua chon thiet bi!\n");
+            printf("[ERROR] Chua chon thiet bi!\n");
             continue;
         }
 
@@ -216,7 +221,7 @@ int main()
             {
                 if (res.code == CODE_SCAN_OK)
                 { // 100
-                    printf(">> [FOUND] Info: %s\n", res.payload);
+                    printf("[FOUND] Info: %s\n", res.payload);
 
                     char *type_token = strtok(res.payload, ";");
 
@@ -230,20 +235,20 @@ int main()
                         printf("   + Parsed ID:   %d\n", id_val);
 
                         devices[currentId].device_id = id_val;
-                        printf("   -> [UPDATED] Device ID saved.\n");
+                        printf("[UPDATED] Device ID saved.\n");
                     }
                     else
                     {
-                        printf("   -> [WARNING] Payload format error!\n");
+                        printf("[WARNING] Payload format error!\n");
                     }
                 }
                 else if (res.code == CODE_SCAN_FAIL)
                 {
-                    printf(">> [INFO] No device found (210)\n");
+                    printf("[INFO] No device found (210)\n");
                 }
                 else
                 {
-                    printf(">> [ERROR] Scan failed. Code: %d\n", res.code);
+                    printf("[ERROR] Scan failed. Code: %d\n", res.code);
                 }
             }
             break;
@@ -274,19 +279,35 @@ int main()
             {
                 if (res.code == CODE_LOGIN_OK)
                 {
-                    ///// code......
+                    int recv_id;
+                    char recv_type[20];
+                    int recv_token;
+
+                    if (sscanf(res.payload, "%d %s %d", &recv_id, recv_type, &recv_token) == 3)
+                    {
+                        devices[currentId].is_logged_in = 1;
+                        devices[currentId].token = recv_token;
+                        devices[currentId].device_id = recv_id;
+                        strcpy(devices[currentId].device_type, recv_type);
+
+                        printf("[SUCCESS] Login OK! | Id: %d | Type: %s | Token: %d\n", recv_id, recv_type, recv_token);
+                    }
+                    else
+                    {
+                        printf("[ERROR] Login response format error!\n");
+                    }
                 }
                 else if (res.code == CODE_LOGIN_FAIL)
                 {
-                    printf(">> [FAILED] Wrong Password (212)\n");
+                    printf("[FAILED] Wrong Password (212)\n");
                 }
                 else if (res.code == CODE_LOGIN_NOID)
                 {
-                    printf(">> [FAILED] Device ID not found (211)\n");
+                    printf("[FAILED] Device ID not found (211)\n");
                 }
                 else
                 {
-                    printf(">> [ERROR] Login failed. Code: %d\n", res.code);
+                    printf("[ERROR] Login failed. Code: %d\n", res.code);
                 }
             }
             break;
@@ -294,47 +315,37 @@ int main()
 
         case 5: // TURN ON
         {
-            memset(&msg, 0, sizeof(msg));
-            msg.type = TYPE_TURN_ON;
-            msg.code = 0;
-            snprintf(msg.payload, sizeof(msg.payload), devices[currentId].token ? "%d" : "", devices[currentId].token);
-
-            send(sock, &msg, sizeof(msg), 0);
-
-            if (recv_all(sock, &res, sizeof(res)) > 0)
-            {
-                if (res.code == CODE_TURN_ON_OK)
-                { // 110
-                    printf(">> [SUCCESS] Turn on OK! %d %s\n", res.code, res.payload);
-                }
-                else
-                {
-                    printf(">> [ERROR] Turn on failed %d %s\n", res.code, res.payload);
-                }
-            }
+            turn_on_device(sock, devices[currentId].token);
             break;
         }
 
         case 6: // TURN OFF
         {
-            memset(&msg, 0, sizeof(msg));
-            msg.type = TYPE_TURN_OFF;
-            msg.code = 0;
-            snprintf(msg.payload, sizeof(msg.payload), devices[currentId].token ? "%d" : "", devices[currentId].token);
+            turn_off_device(sock, devices[currentId].token);
+            break;
+        }
 
-            send(sock, &msg, sizeof(msg), 0);
+        case 7: // SET PUMP DEVICE
+        {
+            set_pump_device(sock, devices[currentId].token);
+            break;
+        }
 
-            if (recv_all(sock, &res, sizeof(res)) > 0)
-            {
-                if (res.code == CODE_TURN_OFF_OK)
-                { // 110
-                    printf(">> [SUCCESS] Turn off OK! %d %s\n", res.code, res.payload);
-                }
-                else
-                {
-                    printf(">> [ERROR] Turn off failed. %d %s\n", res.code, res.payload);
-                }
-            }
+        case 8: // SET AERATOR DEVICE
+        {
+            set_aerator_device(sock, devices[currentId].token);
+            break;
+        }
+
+        case 9: // SET FEEDER DEVICE
+        {
+            set_feeder_device(sock, devices[currentId].token);
+            break;
+        }
+
+        case 10: // SET PH REGULATOR DEVICE
+        {
+            set_ph_regulator_device(sock, devices[currentId].token);
             break;
         }
 
