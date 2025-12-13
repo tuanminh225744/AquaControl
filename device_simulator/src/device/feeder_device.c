@@ -8,8 +8,6 @@
 #include "../device_server.h"
 #include "../../../common/messages.h"
 
-#define MAX_FEEDING_TIMES 10
-
 typedef struct
 {
     int device_id;
