@@ -61,10 +61,20 @@ void create_device()
     {
         int start_hour, start_minute, end_hour, end_minute;
 
-        printf("Interval %d - Enter Start Time (HH MM): ", i + 1);
-        scanf("%d %d", &start_hour, &start_minute);
-        printf("Interval %d - Enter End Time (HH MM): ", i + 1);
-        scanf("%d %d", &end_hour, &end_minute);
+        do
+        {
+            printf("Interval %d - Enter Start Time (HH MM): ", i + 1);
+            scanf("%d %d", &start_hour, &start_minute);
+            printf("Interval %d - Enter End Time (HH MM): ", i + 1);
+            scanf("%d %d", &end_hour, &end_minute);
+            if (start_hour < 0 || start_hour > 23 || start_minute < 0 || start_minute > 59 ||
+                end_hour < 0 || end_hour > 23 || end_minute < 0 || end_minute > 59)
+            {
+                printf("Invalid time. Please enter hour (0-23) and minute (0-59).\n");
+            }
+        } while (start_hour < 0 || start_hour > 23 || start_minute < 0 || start_minute > 59 ||
+                 end_hour < 0 || end_hour > 23 || end_minute < 0 || end_minute > 59);
+
         AD.intervals[i].start_hour = start_hour;
         AD.intervals[i].start_minute = start_minute;
         AD.intervals[i].end_hour = end_hour;
@@ -127,14 +137,6 @@ void handle_setup_aerator_device(int sockfd, struct Message *req, int *tokenPtr,
                    &temp_intervals[i][2], // End Hour
                    &temp_intervals[i][3], // End Minute
                    &offset) != 4)
-        {
-            invalid_message_response(sockfd);
-            return;
-        }
-        if (temp_intervals[i][0] < 0 || temp_intervals[i][0] > 23 ||
-            temp_intervals[i][1] < 0 || temp_intervals[i][1] > 59 ||
-            temp_intervals[i][2] < 0 || temp_intervals[i][2] > 23 ||
-            temp_intervals[i][3] < 0 || temp_intervals[i][3] > 59)
         {
             invalid_message_response(sockfd);
             return;

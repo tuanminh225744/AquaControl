@@ -56,9 +56,15 @@ void create_device()
     for (int i = 0; i < FD.num_feedings; i++)
     {
         int hour, minute;
-        printf("Feeding %d - Enter Time (HH MM): ", i + 1);
-        scanf("%d %d", &hour, &minute);
-
+        do
+        {
+            printf("Feeding %d - Enter Time (HH MM): ", i + 1);
+            scanf("%d %d", &hour, &minute);
+            if (hour < 0 || hour > 23 || minute < 0 || minute > 59)
+            {
+                printf("Invalid time. Please enter hour (0-23) and minute (0-59).\n");
+            }
+        } while (hour < 0 || hour > 23 || minute < 0 || minute > 59);
         FD.feeding_times[i].hour = hour;
         FD.feeding_times[i].minute = minute;
     }
@@ -104,12 +110,6 @@ void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *ac
                    &temp_feeding_times[i][0],
                    &temp_feeding_times[i][1],
                    &offset) != 2)
-        {
-            invalid_message_response(sockfd);
-            return;
-        }
-        if (temp_feeding_times[i][0] < 0 || temp_feeding_times[i][0] > 23 ||
-            temp_feeding_times[i][1] < 0 || temp_feeding_times[i][1] > 59)
         {
             invalid_message_response(sockfd);
             return;

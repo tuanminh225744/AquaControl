@@ -72,10 +72,19 @@ void set_aerator_device(int sock, int token)
     {
         int start_h, start_m, end_h, end_m;
 
-        printf("Interval %d - Start Hour:Minute (HH MM): ", i + 1);
-        scanf("%d %d", &start_h, &start_m);
-        printf("Interval %d - End Hour:Minute (HH MM): ", i + 1);
-        scanf("%d %d", &end_h, &end_m);
+        do
+        {
+            printf("Interval %d - Start Hour:Minute (HH MM): ", i + 1);
+            scanf("%d %d", &start_h, &start_m);
+            printf("Interval %d - End Hour:Minute (HH MM): ", i + 1);
+            scanf("%d %d", &end_h, &end_m);
+            if (start_h < 0 || start_h > 23 || start_m < 0 || start_m > 59 ||
+                end_h < 0 || end_h > 23 || end_m < 0 || end_m > 59)
+            {
+                printf("Invalid time. Please enter hour (0-23) and minute (0-59).\n");
+            }
+        } while (start_h < 0 || start_h > 23 || start_m < 0 || start_m > 59 ||
+                 end_h < 0 || end_h > 23 || end_m < 0 || end_m > 59);
 
         offset += snprintf(msg.payload + offset, sizeof(msg.payload) - offset, " T%d=%02d:%02d-%02d:%02d",
                            i + 1, start_h, start_m, end_h, end_m);
@@ -123,8 +132,15 @@ void set_feeder_device(int sock, int token)
     {
         int hour, minute;
 
-        printf("Feeding %d - Hour:Minute (HH MM): ", i + 1);
-        scanf("%d %d", &hour, &minute);
+        do
+        {
+            printf("Feeding %d - Hour:Minute (HH MM): ", i + 1);
+            scanf("%d %d", &hour, &minute);
+            if (hour < 0 || hour > 23 || minute < 0 || minute > 59)
+            {
+                printf("Invalid time. Please enter hour (0-23) and minute (0-59).\n");
+            }
+        } while (hour < 0 || hour > 23 || minute < 0 || minute > 59);
 
         // Thêm thời điểm cho ăn vào chuỗi payload
         offset += snprintf(msg.payload + offset, sizeof(msg.payload) - offset, " T%d=%02d:%02d",
