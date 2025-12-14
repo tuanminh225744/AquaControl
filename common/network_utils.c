@@ -71,10 +71,9 @@ int send_all(int sock, void *buffer, int size)
 }
 
 // 3. ĐỊNH NGHĨA HÀM GỬI TỪNG DÒNG
-void send_line(int sock, char *message)
+int send_line(int sock, char *message)
 {
     char buffer[1024];
-    // Tự động chèn \r\n vào cuối chuỗi message
     int len = snprintf(buffer, sizeof(buffer), "%s\r\n", message);
     return send_all(sock, buffer, len);
 }

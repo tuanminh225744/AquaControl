@@ -7,6 +7,7 @@
 
 #include "../device_server.h"
 #include "../../../common/messages.h"
+#include "../../../common/network_utils.h"
 
 typedef struct
 {

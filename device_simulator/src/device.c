@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <sys/socket.h>
 #include "../../common/messages.h"
+#include "../../common/network_utils.h"
 
 int handle_check_token(int req_token, int *tokenPtr, int number_of_tokens)
 {
@@ -24,7 +25,7 @@ void invalid_message_response(int sockfd)
     res.code = CODE_INVALID_MSG;
     strcpy(res.payload, "Invalid Format");
 
-    send_all(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res));
 }
 
 void invalid_token_response(int sockfd)
@@ -35,7 +36,7 @@ void invalid_token_response(int sockfd)
     res.code = CODE_TOKEN_INVALID;
     strcpy(res.payload, "Invalid Token");
 
-    send_all(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res));
 }
 
 void handle_scan_request(int sockfd, struct Message *req, int device_id, char *device_type)
@@ -47,7 +48,7 @@ void handle_scan_request(int sockfd, struct Message *req, int device_id, char *d
     res.code = CODE_SCAN_OK;
     sprintf(res.payload, "%s;%d", device_type, device_id);
 
-    send_all(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res));
     printf("[SCAN] Responded Code %d\n", res.code);
 }
 
@@ -87,7 +88,7 @@ void handle_connect_request(int sockfd, struct Message *req, int device_id, char
         printf("[LOGIN] Success. Token: %d\n", token);
     }
 
-    send_all(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res));
 }
 
 void handle_turn_on_request(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
@@ -115,7 +116,7 @@ void handle_turn_on_request(int sockfd, struct Message *req, int *tokenPtr, int 
         strcpy(res.payload, "Turn On Success");
     }
 
-    send_all(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res));
     printf("[TURN ON] Responded Code %d %s\n", res.code, res.payload);
 }
 
@@ -144,6 +145,6 @@ void handle_turn_off_request(int sockfd, struct Message *req, int *tokenPtr, int
         strcpy(res.payload, "Turn Off Success");
     }
 
-    send_all(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res));
     printf("[TURN OFF] Responded Code %d %s\n", res.code, res.payload);
 }
