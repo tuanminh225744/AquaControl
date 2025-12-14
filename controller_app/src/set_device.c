@@ -26,7 +26,7 @@ void set_pump_device(int sock, int token)
     // Format: [token] V=[flow_rate] T=[duration]
     snprintf(msg.payload, sizeof(msg.payload), "%d V=%lf T=%lf", token, flow_rate, duration);
 
-    send(sock, &msg, sizeof(msg), 0);
+    send_all(sock, &msg, sizeof(msg));
 
     if (recv_all(sock, &res, sizeof(res)) > 0)
     {
@@ -81,7 +81,7 @@ void set_aerator_device(int sock, int token)
                            i + 1, start_h, start_m, end_h, end_m);
     }
 
-    send(sock, &msg, sizeof(msg), 0);
+    send_all(sock, &msg, sizeof(msg));
 
     if (recv_all(sock, &res, sizeof(res)) > 0)
     {
@@ -131,7 +131,7 @@ void set_feeder_device(int sock, int token)
                            i + 1, hour, minute);
     }
 
-    send(sock, &msg, sizeof(msg), 0);
+    send_all(sock, &msg, sizeof(msg));
 
     if (recv_all(sock, &res, sizeof(res)) > 0)
     {
@@ -165,7 +165,7 @@ void set_ph_regulator_device(int sock, int token)
     // Format: [token] PH=[pH_min] W=[w_ca]
     snprintf(msg.payload, sizeof(msg.payload), "%d PH=%lf W=%lf", token, ph_min, w_ca);
 
-    send(sock, &msg, sizeof(msg), 0);
+    send_all(sock, &msg, sizeof(msg));
 
     if (recv_all(sock, &res, sizeof(res)) > 0)
     {

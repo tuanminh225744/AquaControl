@@ -164,7 +164,7 @@ void handle_setup_aerator_device(int sockfd, struct Message *req, int *tokenPtr,
     res.code = CODE_SET_AERATOR_DEVICE_OK;
     strcpy(res.payload, "Aerator Setup Success");
 
-    send(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res));
     printf("[SETUP DEVICE] Responded Code %d %s\n", res.code, res.payload);
 }
 

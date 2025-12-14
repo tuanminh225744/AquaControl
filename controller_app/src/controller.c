@@ -216,7 +216,7 @@ int main()
             msg.code = 0;
             strcpy(msg.payload, "SCAN");
 
-            send(sock, &msg, sizeof(msg), 0);
+            send_all(sock, &msg, sizeof(msg));
 
             if (recv_all(sock, &res, sizeof(res)) > 0)
             {
@@ -274,7 +274,7 @@ int main()
 
             snprintf(msg.payload, sizeof(msg.payload), "%d %s", target_id, password);
 
-            send(sock, &msg, sizeof(msg), 0);
+            send_all(sock, &msg, sizeof(msg));
 
             if (recv_all(sock, &res, sizeof(res)) > 0)
             {

@@ -17,7 +17,7 @@ void turn_on_device(int sock, int token)
     msg.code = 0;
     snprintf(msg.payload, sizeof(msg.payload), "%d", token);
 
-    send(sock, &msg, sizeof(msg), 0);
+    send_all(sock, &msg, sizeof(msg));
 
     if (recv_all(sock, &res, sizeof(res)) > 0)
     {
@@ -42,7 +42,7 @@ void turn_off_device(int sock, int token)
     msg.code = 0;
     snprintf(msg.payload, sizeof(msg.payload), "%d", token);
 
-    send(sock, &msg, sizeof(msg), 0);
+    send_all(sock, &msg, sizeof(msg));
 
     if (recv_all(sock, &res, sizeof(res)) > 0)
     {

@@ -24,7 +24,7 @@ void invalid_message_response(int sockfd)
     res.code = CODE_INVALID_MSG;
     strcpy(res.payload, "Invalid Format");
 
-    send(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res), 0);
 }
 
 void invalid_token_response(int sockfd)
@@ -35,7 +35,7 @@ void invalid_token_response(int sockfd)
     res.code = CODE_TOKEN_INVALID;
     strcpy(res.payload, "Invalid Token");
 
-    send(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res), 0);
 }
 
 void handle_scan_request(int sockfd, struct Message *req, int device_id, char *device_type)
@@ -47,7 +47,7 @@ void handle_scan_request(int sockfd, struct Message *req, int device_id, char *d
     res.code = CODE_SCAN_OK;
     sprintf(res.payload, "%s;%d", device_type, device_id);
 
-    send(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res), 0);
     printf("[SCAN] Responded Code %d\n", res.code);
 }
 
@@ -87,7 +87,7 @@ void handle_connect_request(int sockfd, struct Message *req, int device_id, char
         printf("[LOGIN] Success. Token: %d\n", token);
     }
 
-    send(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res), 0);
 }
 
 void handle_turn_on_request(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
@@ -115,7 +115,7 @@ void handle_turn_on_request(int sockfd, struct Message *req, int *tokenPtr, int 
         strcpy(res.payload, "Turn On Success");
     }
 
-    send(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res), 0);
     printf("[TURN ON] Responded Code %d %s\n", res.code, res.payload);
 }
 
@@ -144,6 +144,6 @@ void handle_turn_off_request(int sockfd, struct Message *req, int *tokenPtr, int
         strcpy(res.payload, "Turn Off Success");
     }
 
-    send(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res), 0);
     printf("[TURN OFF] Responded Code %d %s\n", res.code, res.payload);
 }

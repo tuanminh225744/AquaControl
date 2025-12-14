@@ -133,7 +133,7 @@ void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *ac
     res.code = CODE_SET_FEEDER_DEVICE_OK;
     strcpy(res.payload, "Feeder Setup Success");
 
-    send(sockfd, &res, sizeof(res), 0);
+    send_all(sockfd, &res, sizeof(res));
     printf("[SETUP DEVICE] Responded Code %d %s\n", res.code, res.payload);
 }
 

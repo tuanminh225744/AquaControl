@@ -36,7 +36,7 @@ void *client_thread(void *arg)
         res.type = TYPE_SCAN;
         res.code = CODE_INVALID_MSG;
         sprintf(res.payload, "Invalid message");
-        send(sock, &res, sizeof(res), 0);
+        send_all(sock, &res, sizeof(res), 0);
         printf("[DEVICE] Wrong handshake. Closing.\n");
         close(sock);
         return NULL;
@@ -47,7 +47,7 @@ void *client_thread(void *arg)
     res.type = TYPE_SCAN;
     res.code = CODE_CONNECT_OK;
     sprintf(res.payload, "Device connected");
-    send(sock, &res, sizeof(res), 0);
+    send_all(sock, &res, sizeof(res), 0);
     printf("[DEVICE] Connected.\n");
 
     // --- Vòng lặp nhận message ---

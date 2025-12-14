@@ -19,7 +19,6 @@ int recv_line(int sock, char *buffer, int size)
         if (c == '\r')
         {
             char next;
-            // Kiểm tra xem ký tự tiếp theo có phải là \n không (không đọc nó ra khỏi buffer)
             if (recv(sock, &next, 1, MSG_PEEK) > 0 && next == '\n')
             {
                 recv(sock, &next, 1, 0); // Đọc bỏ \n
@@ -52,11 +51,30 @@ int recv_all(int sock, void *buffer, int size)
     return total;
 }
 
+int send_all(int sock, void *buffer, int size)
+{
+    int total = 0;
+    int bytes_left = size;
+    char *ptr = (char *)buffer;
+
+    while (total < size)
+    {
+        int n = send(sock, ptr + total, bytes_left, 0);
+        if (n == -1)
+        {
+            return -1;
+        }
+        total += n;
+        bytes_left -= n;
+    }
+    return total;
+}
+
 // 3. ĐỊNH NGHĨA HÀM GỬI TỪNG DÒNG
 void send_line(int sock, char *message)
 {
     char buffer[1024];
     // Tự động chèn \r\n vào cuối chuỗi message
-    snprintf(buffer, sizeof(buffer), "%s\r\n", message);
-    send(sock, buffer, strlen(buffer), 0);
+    int len = snprintf(buffer, sizeof(buffer), "%s\r\n", message);
+    return send_all(sock, buffer, len);
 }
