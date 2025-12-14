@@ -33,7 +33,6 @@ void *client_thread(void *arg)
     {
         struct Message res;
         memset(&res, 0, sizeof(res));
-        res.type = TYPE_SCAN;
         res.code = CODE_INVALID_MSG;
         sprintf(res.payload, "Invalid message");
         send_all(sock, &res, sizeof(res));
@@ -44,7 +43,6 @@ void *client_thread(void *arg)
 
     struct Message res;
     memset(&res, 0, sizeof(res));
-    res.type = TYPE_SCAN;
     res.code = CODE_CONNECT_OK;
     sprintf(res.payload, "Device connected");
     send_all(sock, &res, sizeof(res));
