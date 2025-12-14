@@ -202,10 +202,7 @@ int main()
                 {
                     printf("10. Set PH regulator device \n");
                 }
-                else
-                {
-                    printf("7. Set Pump\n8. Set Aerator\n9. Set Feeder\n10. Set pH Regulator\n");
-                }
+                printf("11. Log out\n");
             }
         }
         printf("0. Exit\n");
@@ -412,6 +409,21 @@ int main()
         default:
             printf("[WARNING] Invalid Option!\n");
             break;
+        }
+
+        if (comman == 11)
+        {
+            if (devices[currentId].is_logged_in)
+            {
+                devices[currentId].is_logged_in = 0;
+                devices[currentId].token = 0;
+                printf("SUCCESS Loged out successfully!");
+            }
+            else
+            {
+                printf("You are not loggin!");
+            }
+            continue;
         }
     }
     return 0;
