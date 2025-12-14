@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include "../../common/messages.h"
@@ -153,30 +154,63 @@ int main()
     while (1)
     {
         printf("\n========= MULTI-CONTROLLER =========\n");
-        if (currentId != -1)
+        if (currentId != -1 && devices[currentId].active)
         {
-            printf("TARGET: [%d] %s:%d\n", currentId,
-                   devices[currentId].ip, devices[currentId].port);
+            printf("STATUS: Connected to Slot [%d] | IP: %s\n",
+                   currentId, devices[currentId].ip);
+
+            if (devices[currentId].is_logged_in)
+            {
+                printf("Device: [%s] | ID: %d | Token: %d\n", devices[currentId].device_type, devices[currentId].device_id, devices[currentId].token);
+            }
+            else
+            {
+                printf("Device: Not loggin !");
+            }
         }
         else
         {
-            printf("TARGET: None \n");
+            printf("STATUS: No Device selected \n");
         }
         printf("------------------------------------\n");
         printf("1. Connect new device\n");
         printf("2. List of devices\n");
         printf("------------------------------------\n");
-        printf("3. Scan \n");
-        printf("4. Login \n");
-        printf("5. Turn on \n");
-        printf("6. Turn off \n");
-        printf("7. Set pump device \n");
-        printf("8. Set aerator device \n");
-        printf("9. Set feed device \n");
-        printf("10. Set PH regulator device \n");
+        if (currentId != -1 && devices[currentId].active)
+        {
+            printf("3. Scan \n");
+            printf("4. Login \n");
+
+            if (devices[currentId].is_logged_in == 1)
+            {
+                printf("=============================\n");
+                printf("5. Turn on \n");
+                printf("6. Turn off \n");
+                if (strstr(devices[currentId].device_type, "PUMP") != NULL)
+                {
+                    printf("7. Set pump device \n");
+                }
+                else if (strstr(devices[currentId].device_type, "AERATOR") != NULL)
+                {
+                    printf("8. Set aerator device \n");
+                }
+                else if (strstr(devices[currentId].device_type, "FEEDER") != NULL)
+                {
+                    printf("9. Set feed device \n");
+                }
+                else if (strstr(devices[currentId].device_type, "PH") != NULL)
+                {
+                    printf("10. Set PH regulator device \n");
+                }
+                else
+                {
+                    printf("7. Set Pump\n8. Set Aerator\n9. Set Feeder\n10. Set pH Regulator\n");
+                }
+            }
+        }
         printf("0. Exit\n");
         printf("======================================\n");
-        printf("Select: ");
+        printf("Select: \n");
 
         if (scanf("%d", &comman) != 1)
         {
@@ -185,10 +219,6 @@ int main()
         }
         clear_stdin();
 
-        if (comman == 0)
-        {
-            break;
-        }
         if (comman == 1)
         {
             connect_new_device();
@@ -199,17 +229,15 @@ int main()
             list_device();
             continue;
         }
-
         if (currentId == -1)
         {
-            printf("[ERROR] Chua chon thiet bi!\n");
+            printf("[WARNING] Please select a device first (Option 1 or 2)!\n");
             continue;
         }
 
         int sock = devices[currentId].sockfd;
-        switch (comman)
-        {
-        case 3: // SCAN
+
+        if (comman == 3)
         {
             memset(&msg, 0, sizeof(msg));
             msg.type = TYPE_SCAN;
@@ -221,41 +249,28 @@ int main()
             if (recv_all(sock, &res, sizeof(res)) > 0)
             {
                 if (res.code == CODE_SCAN_OK)
-                { // 100
-                    printf("[FOUND] Info: %s\n", res.payload);
+                {
+                    printf("Found Infor: %s\n", res.payload);
 
-                    char *type_token = strtok(res.payload, ";");
+                    char *type_device = strtok(res.payload, ";");
+                    char *id_device = strtok(NULL, ";");
 
-                    char *id_token = strtok(NULL, ";");
-
-                    if (type_token != NULL && id_token != NULL)
+                    if (type_device != NULL && id_device != NULL)
                     {
-                        int id_val = atoi(id_token);
-
-                        printf("   + Parsed Type: %s\n", type_token);
-                        printf("   + Parsed ID:   %d\n", id_val);
-
-                        devices[currentId].device_id = id_val;
-                        printf("[UPDATED] Device ID saved.\n");
-                    }
-                    else
-                    {
-                        printf("[WARNING] Payload format error!\n");
+                        int id_value = atoi(id_device);
+                        devices[currentId].device_id = id_value;
+                        strncpy(devices[currentId].device_type, type_device, sizeof(devices[currentId].device_type));
+                        printf("Infor: Type:%s  ID: %d\n", type_device, id_value);
                     }
                 }
                 else if (res.code == CODE_SCAN_FAIL)
                 {
-                    printf("[INFO] No device found (210)\n");
-                }
-                else
-                {
-                    printf("[ERROR] Scan failed. Code: %d\n", res.code);
+                    printf("Resquest Sacn fail!\n");
                 }
             }
-            break;
+            continue;
         }
-
-        case 4: // LOGIN
+        if (comman == 4)
         {
             memset(&msg, 0, sizeof(msg));
             msg.type = TYPE_CONNECT;
@@ -264,13 +279,12 @@ int main()
             int target_id;
             char password[32];
 
-            printf("Enter Device ID to login: ");
+            printf("Please enter id want to loggin");
             scanf("%d", &target_id);
             clear_stdin();
-
-            printf("Enter Password: ");
+            printf("Please enter password");
             fgets(password, sizeof(password), stdin);
-            password[strcspn(password, "\n")] = 0;
+            password[sizeof(password) - 1] = '\0';
 
             snprintf(msg.payload, sizeof(msg.payload), "%d %s", target_id, password);
 
@@ -278,6 +292,7 @@ int main()
 
             if (recv_all(sock, &res, sizeof(res)) > 0)
             {
+                printf("%d", res.code);
                 if (res.code == CODE_LOGIN_OK)
                 {
                     int recv_id;
@@ -291,29 +306,33 @@ int main()
                         devices[currentId].device_id = recv_id;
                         strcpy(devices[currentId].device_type, recv_type);
 
-                        printf("[SUCCESS] Login OK! | Id: %d | Type: %s | Token: %d\n", recv_id, recv_type, recv_token);
-                    }
-                    else
-                    {
-                        printf("[ERROR] Login response format error!\n");
+                        printf("Success Login OK! Type: %s\n", recv_type);
                     }
                 }
                 else if (res.code == CODE_LOGIN_FAIL)
                 {
-                    printf("[FAILED] Wrong Password (212)\n");
+                    printf("[FAILED] Wrong Password\n");
                 }
+
                 else if (res.code == CODE_LOGIN_NOID)
                 {
-                    printf("[FAILED] Device ID not found (211)\n");
+                    printf("[FAILED] Device ID not found\n");
                 }
                 else
                 {
-                    printf("[ERROR] Login failed. Code: %d\n", res.code);
+                    printf("[ERROR] Login failed \n");
                 }
             }
-            break;
+            continue;
+        }
+        if (devices[currentId].is_logged_in == 0)
+        {
+            printf("[ACCESS DENIED] You must LOGIN first (Option 4) to use this function!\n");
+            continue;
         }
 
+        switch (comman)
+        {
         case 5: // TURN ON
         {
             turn_on_device(sock, devices[currentId].token);
@@ -328,28 +347,56 @@ int main()
 
         case 7: // SET PUMP DEVICE
         {
-            set_pump_device(sock, devices[currentId].token);
+            if (devices[currentId].device_type == "PUMP")
+            {
+                set_pump_device(sock, devices[currentId].token);
+            }
+            else
+            {
+                printf("Not the type of device currently logged in.");
+            }
+
             break;
         }
 
         case 8: // SET AERATOR DEVICE
         {
-            set_aerator_device(sock, devices[currentId].token);
+            if (devices[currentId].device_type == "AERATOR")
+            {
+                set_aerator_device(sock, devices[currentId].token);
+            }
+            else
+            {
+                printf("Not the type of device currently logged in.");
+            }
             break;
         }
 
         case 9: // SET FEEDER DEVICE
         {
-            set_feeder_device(sock, devices[currentId].token);
+            if (devices[currentId].device_type == "FEEDER")
+            {
+                set_feeder_device(sock, devices[currentId].token);
+            }
+            else
+            {
+                printf("Not the type of device currently logged in.");
+            }
             break;
         }
 
         case 10: // SET PH REGULATOR DEVICE
         {
-            set_ph_regulator_device(sock, devices[currentId].token);
+            if (devices[currentId].device_type == "PH REGULATOR")
+            {
+                set_ph_regulator_device(sock, devices[currentId].token);
+            }
+            else
+            {
+                printf("Not the type of device currently logged in.");
+            }
             break;
         }
-
         case 0:
         {
             for (int i = 0; i < MAX_DEVICES; i++)
@@ -362,6 +409,10 @@ int main()
             printf("Exiting...\n");
             return 0;
         }
+        default:
+            printf("[WARNING] Invalid Option!\n");
+            break;
         }
     }
+    return 0;
 }
