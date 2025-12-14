@@ -30,7 +30,9 @@ void clear_stdin()
 {
     int c;
     while ((c = getchar()) != '\n' && c != EOF)
-        ;
+    {
+        continue;
+    }
 }
 
 void init_device_list()
@@ -344,54 +346,33 @@ int main()
 
         case 7: // SET PUMP DEVICE
         {
-            if (devices[currentId].device_type == "PUMP")
-            {
-                set_pump_device(sock, devices[currentId].token);
-            }
-            else
-            {
-                printf("Not the type of device currently logged in.");
-            }
+
+            set_pump_device(sock, devices[currentId].token);
 
             break;
         }
 
         case 8: // SET AERATOR DEVICE
         {
-            if (devices[currentId].device_type == "AERATOR")
-            {
-                set_aerator_device(sock, devices[currentId].token);
-            }
-            else
-            {
-                printf("Not the type of device currently logged in.");
-            }
+
+            set_aerator_device(sock, devices[currentId].token);
+
             break;
         }
 
         case 9: // SET FEEDER DEVICE
         {
-            if (devices[currentId].device_type == "FEEDER")
-            {
-                set_feeder_device(sock, devices[currentId].token);
-            }
-            else
-            {
-                printf("Not the type of device currently logged in.");
-            }
+
+            set_feeder_device(sock, devices[currentId].token);
+
             break;
         }
 
         case 10: // SET PH REGULATOR DEVICE
         {
-            if (devices[currentId].device_type == "PH REGULATOR")
-            {
-                set_ph_regulator_device(sock, devices[currentId].token);
-            }
-            else
-            {
-                printf("Not the type of device currently logged in.");
-            }
+
+            set_ph_regulator_device(sock, devices[currentId].token);
+
             break;
         }
         case 0:
