@@ -258,7 +258,7 @@ int main()
                     {
                         int id_value = atoi(id_device);
                         devices[currentId].device_id = id_value;
-                        strncpy(devices[currentId].device_type, type_device, sizeof(devices[currentId].device_type));
+                        strcpy(devices[currentId].device_type, type_device);
                         printf("Infor: Type:%s  ID: %d\n", type_device, id_value);
                     }
                 }

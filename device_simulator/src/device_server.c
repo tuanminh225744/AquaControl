@@ -61,7 +61,6 @@ void *client_thread(void *arg)
             break;
         }
 
-        // Gọi callback của thiết bị
         handler(sock, &msg);
     }
 
