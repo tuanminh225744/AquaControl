@@ -167,7 +167,7 @@ int main()
             }
             else
             {
-                printf("Device: Not loggin !");
+                printf("Device: Not loggin !\n");
             }
         }
         else
@@ -209,7 +209,7 @@ int main()
         }
         printf("0. Exit\n");
         printf("======================================\n");
-        printf("Select: \n");
+        printf("Select: ");
 
         if (scanf("%d", &comman) != 1)
         {
@@ -278,10 +278,10 @@ int main()
             int target_id;
             char password[32];
 
-            printf("Please enter id want to loggin");
+            printf("Please enter id want to login: ");
             scanf("%d", &target_id);
             clear_stdin();
-            printf("Please enter password");
+            printf("Please enter password: ");
             fgets(password, sizeof(password), stdin);
             password[sizeof(password) - 1] = '\0';
 
