@@ -76,6 +76,56 @@ void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *ac
     printf("[SET DEVICE] Responded Code %d %s\n", res.code, res.payload);
 }
 
+void handle_get_water_pump_device_info(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+{
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+    int req_token;
+    char *ptr = req->payload;
+    int offset = 0;
+
+    // --- 1. Đọc Token ---
+    if (sscanf(ptr, "%d%n", &req_token, &offset) != 1)
+    {
+        invalid_message_response(sockfd);
+        return;
+    }
+
+    // --- 2. Validate Token ---
+    if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    {
+        invalid_token_response(sockfd);
+        return;
+    }
+
+    // --- 3. Build Response Payload ---
+    char payload_buffer[PAYLOAD_SIZE];
+    int current_len = 0;
+
+    // A. Thêm Device ID (I=...)
+    current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                            "I=%d ", WPD.device_id);
+
+    // B. Thêm Trạng thái hoạt động (S=...)
+    current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                            "S=%d ", WPD.active);
+
+    // C. Thêm Tốc độ dòng chảy (V=...)
+    current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                            "V=%.2lf ", WPD.flow_rate);
+
+    // D. Thêm Thời gian chạy (T=...)
+    current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                            "T=%.2lf", WPD.duration);
+
+    // --- 4. Send Info Response ---
+    res.code = CODE_GET_PUMP_DEVICE_INFO_OK;
+    strcpy(res.payload, payload_buffer);
+
+    send_all(sockfd, &res, sizeof(res));
+    printf("[GET INFO DEVICE] Responded Code %d Payload: %s\n", res.code, res.payload);
+}
+
 void water_pump_handler(int sock, struct Message *msg)
 {
 

@@ -147,10 +147,125 @@ void list_device()
     }
 }
 
+void scan_device()
+{
+    int sock = devices[currentId].sockfd;
+    struct Message msg, res;
+    memset(&msg, 0, sizeof(msg));
+    msg.type = TYPE_SCAN;
+    msg.code = 0;
+    strcpy(msg.payload, "SCAN");
+
+    send_all(sock, &msg, sizeof(msg));
+
+    if (recv_all(sock, &res, sizeof(res)) > 0)
+    {
+        if (res.code == CODE_SCAN_OK)
+        {
+            printf("Found Infor: %s\n", res.payload);
+
+            char *type_device = strtok(res.payload, ";");
+            char *id_device = strtok(NULL, ";");
+
+            if (type_device != NULL && id_device != NULL)
+            {
+                int id_value = atoi(id_device);
+                devices[currentId].device_id = id_value;
+                strcpy(devices[currentId].device_type, type_device);
+                printf("Infor: Type:%s  ID: %d\n", type_device, id_value);
+            }
+        }
+        else if (res.code == CODE_SCAN_FAIL)
+        {
+            printf("Resquest Sacn fail!\n");
+        }
+    }
+}
+
+void login_device()
+{
+    struct Message msg, res;
+    memset(&msg, 0, sizeof(msg));
+    msg.type = TYPE_CONNECT;
+    msg.code = 0;
+
+    int target_id;
+    char password[32];
+
+    printf("Please enter id want to login: ");
+    scanf("%d", &target_id);
+    clear_stdin();
+    printf("Please enter password: ");
+    fgets(password, sizeof(password), stdin);
+    password[sizeof(password) - 1] = '\0';
+
+    snprintf(msg.payload, sizeof(msg.payload), "%d %s", target_id, password);
+
+    send_all(devices[currentId].sockfd, &msg, sizeof(msg));
+
+    if (recv_all(devices[currentId].sockfd, &res, sizeof(res)) > 0)
+    {
+        if (res.code == CODE_LOGIN_OK)
+        {
+            int recv_id;
+            char recv_type[20];
+            int recv_token;
+
+            if (sscanf(res.payload, "%d %s %d", &recv_id, recv_type, &recv_token) == 3)
+            {
+                devices[currentId].is_logged_in = 1;
+                devices[currentId].token = recv_token;
+                devices[currentId].device_id = recv_id;
+                strcpy(devices[currentId].device_type, recv_type);
+
+                printf("[SUCCESS] Login OK! Type: %s\n", recv_type);
+            }
+        }
+        else if (res.code == CODE_LOGIN_FAIL)
+        {
+            printf("[FAILED] Wrong Password\n");
+        }
+
+        else if (res.code == CODE_LOGIN_NOID)
+        {
+            printf("[FAILED] Device ID not found\n");
+        }
+        else
+        {
+            printf("[ERROR] Login failed \n");
+        }
+    }
+}
+
+void logout_device()
+{
+    if (devices[currentId].is_logged_in)
+    {
+        devices[currentId].is_logged_in = 0;
+        devices[currentId].token = 0;
+        printf("[SUCCESS] Logout successfully!");
+    }
+    else
+    {
+        printf("[FAILED] You are not loggin!");
+    }
+}
+
+void exit_device()
+{
+    for (int i = 0; i < MAX_DEVICES; i++)
+    {
+        if (devices[i].active)
+        {
+            close(devices[i].sockfd);
+        }
+    }
+    printf("Exiting...\n");
+}
+
 int main()
 {
     init_device_list();
-    struct Message msg, res;
     int comman;
 
     while (1)
@@ -191,20 +306,28 @@ int main()
                 if (strstr(devices[currentId].device_type, "PUMP") != NULL)
                 {
                     printf("7. Set pump device \n");
+                    printf("8. Get pump device info \n");
                 }
                 else if (strstr(devices[currentId].device_type, "AERATOR") != NULL)
                 {
-                    printf("8. Set aerator device \n");
+                    printf("9. Set aerator device \n");
+                    printf("10. Get aerator device info \n");
                 }
                 else if (strstr(devices[currentId].device_type, "FEEDER") != NULL)
                 {
-                    printf("9. Set feed device \n");
+                    printf("11. Set feeder device \n");
+                    printf("12. Get feeder device info\n");
                 }
                 else if (strstr(devices[currentId].device_type, "PH") != NULL)
                 {
-                    printf("10. Set PH regulator device \n");
+                    printf("13. Set PH regulator device \n");
+                    printf("14. Get PH regulator device info\n");
                 }
-                printf("11. Log out\n");
+                else if (strstr(devices[currentId].device_type, "SCAN") != NULL)
+                {
+                    printf("15. Get scan device info\n");
+                }
+                printf("16. Log out\n");
             }
         }
         printf("0. Exit\n");
@@ -218,193 +341,109 @@ int main()
         }
         clear_stdin();
 
-        if (comman == 1)
-        {
-            connect_new_device();
-            continue;
-        }
-        if (comman == 2)
-        {
-            list_device();
-            continue;
-        }
-        if (currentId == -1)
-        {
-            printf("[WARNING] Please select a device first (Option 1 or 2)!\n");
-            continue;
-        }
-
-        int sock = devices[currentId].sockfd;
-
-        if (comman == 3)
-        {
-            memset(&msg, 0, sizeof(msg));
-            msg.type = TYPE_SCAN;
-            msg.code = 0;
-            strcpy(msg.payload, "SCAN");
-
-            send_all(sock, &msg, sizeof(msg));
-
-            if (recv_all(sock, &res, sizeof(res)) > 0)
-            {
-                if (res.code == CODE_SCAN_OK)
-                {
-                    printf("Found Infor: %s\n", res.payload);
-
-                    char *type_device = strtok(res.payload, ";");
-                    char *id_device = strtok(NULL, ";");
-
-                    if (type_device != NULL && id_device != NULL)
-                    {
-                        int id_value = atoi(id_device);
-                        devices[currentId].device_id = id_value;
-                        strcpy(devices[currentId].device_type, type_device);
-                        printf("Infor: Type:%s  ID: %d\n", type_device, id_value);
-                    }
-                }
-                else if (res.code == CODE_SCAN_FAIL)
-                {
-                    printf("Resquest Sacn fail!\n");
-                }
-            }
-            continue;
-        }
-        if (comman == 4)
-        {
-            memset(&msg, 0, sizeof(msg));
-            msg.type = TYPE_CONNECT;
-            msg.code = 0;
-
-            int target_id;
-            char password[32];
-
-            printf("Please enter id want to login: ");
-            scanf("%d", &target_id);
-            clear_stdin();
-            printf("Please enter password: ");
-            fgets(password, sizeof(password), stdin);
-            password[sizeof(password) - 1] = '\0';
-
-            snprintf(msg.payload, sizeof(msg.payload), "%d %s", target_id, password);
-
-            send_all(sock, &msg, sizeof(msg));
-
-            if (recv_all(sock, &res, sizeof(res)) > 0)
-            {
-                printf("%d", res.code);
-                if (res.code == CODE_LOGIN_OK)
-                {
-                    int recv_id;
-                    char recv_type[20];
-                    int recv_token;
-
-                    if (sscanf(res.payload, "%d %s %d", &recv_id, recv_type, &recv_token) == 3)
-                    {
-                        devices[currentId].is_logged_in = 1;
-                        devices[currentId].token = recv_token;
-                        devices[currentId].device_id = recv_id;
-                        strcpy(devices[currentId].device_type, recv_type);
-
-                        printf("Success Login OK! Type: %s\n", recv_type);
-                    }
-                }
-                else if (res.code == CODE_LOGIN_FAIL)
-                {
-                    printf("[FAILED] Wrong Password\n");
-                }
-
-                else if (res.code == CODE_LOGIN_NOID)
-                {
-                    printf("[FAILED] Device ID not found\n");
-                }
-                else
-                {
-                    printf("[ERROR] Login failed \n");
-                }
-            }
-            continue;
-        }
-        if (devices[currentId].is_logged_in == 0)
-        {
-            printf("[ACCESS DENIED] You must LOGIN first (Option 4) to use this function!\n");
-            continue;
-        }
-
         switch (comman)
         {
+        case 1: // CONNECT NEW DEVICE
+        {
+            connect_new_device();
+            break;
+        }
+        case 2: // LIST DEVICE
+        {
+            list_device();
+            break;
+        }
+        case 3: // SCAN
+        {
+            scan_device();
+            break;
+        }
+        case 4: // LOGIN
+        {
+            login_device();
+            break;
+        }
         case 5: // TURN ON
         {
-            turn_on_device(sock, devices[currentId].token);
+            turn_on_device(devices[currentId].sockfd, devices[currentId].token);
             break;
         }
 
         case 6: // TURN OFF
         {
-            turn_off_device(sock, devices[currentId].token);
+            turn_off_device(devices[currentId].sockfd, devices[currentId].token);
             break;
         }
 
         case 7: // SET PUMP DEVICE
         {
 
-            set_pump_device(sock, devices[currentId].token);
-
+            set_pump_device(devices[currentId].sockfd, devices[currentId].token);
             break;
         }
 
-        case 8: // SET AERATOR DEVICE
+        case 8: // GET PUMP DEVICE INFO
         {
-
-            set_aerator_device(sock, devices[currentId].token);
-
+            get_pump_device_info(devices[currentId].sockfd, devices[currentId].token);
             break;
         }
 
-        case 9: // SET FEEDER DEVICE
+        case 9: // SET AERATOR DEVICE
         {
 
-            set_feeder_device(sock, devices[currentId].token);
-
+            set_aerator_device(devices[currentId].sockfd, devices[currentId].token);
             break;
         }
 
-        case 10: // SET PH REGULATOR DEVICE
+        case 10: // GET AERATOR DEVICE INFO
         {
-
-            set_ph_regulator_device(sock, devices[currentId].token);
-
+            get_aerator_device_info(devices[currentId].sockfd, devices[currentId].token);
             break;
         }
-        case 0:
+
+        case 11: // SET FEEDER DEVICE
         {
-            for (int i = 0; i < MAX_DEVICES; i++)
-            {
-                if (devices[i].active)
-                {
-                    close(devices[i].sockfd);
-                }
-            }
-            printf("Exiting...\n");
+
+            set_feeder_device(devices[currentId].sockfd, devices[currentId].token);
+            break;
+        }
+
+        case 12: // GET FEEDER DEVICE INFO
+        {
+            get_feeder_device_info(devices[currentId].sockfd, devices[currentId].token);
+            break;
+        }
+        case 13: // SET PH REGULATOR DEVICE
+        {
+
+            set_ph_regulator_device(devices[currentId].sockfd, devices[currentId].token);
+            break;
+        }
+        case 14: // GET PH REGULATOR DEVICE INFO
+        {
+            get_ph_regulator_device_info(devices[currentId].sockfd, devices[currentId].token);
+            break;
+        }
+        case 15: // GET SENSOR DEVICE INFO
+        {
+            get_sensor_device_info(devices[currentId].sockfd, devices[currentId].token);
+            break;
+        }
+        case 0: // EXIT
+        {
+            exit_device();
             return 0;
         }
+        case 16: // LOGOUT
+        {
+            logout_device();
+            break;
+        }
         default:
+        {
             printf("[WARNING] Invalid Option!\n");
             break;
         }
-
-        if (comman == 11)
-        {
-            if (devices[currentId].is_logged_in)
-            {
-                devices[currentId].is_logged_in = 0;
-                devices[currentId].token = 0;
-                printf("SUCCESS Loged out successfully!");
-            }
-            else
-            {
-                printf("You are not loggin!");
-            }
-            continue;
         }
     }
     return 0;

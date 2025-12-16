@@ -138,6 +138,61 @@ void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *ac
     printf("[SETUP DEVICE] Responded Code %d %s\n", res.code, res.payload);
 }
 
+void handle_get_feeder_device_info(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+{
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+    int req_token;
+    char *ptr = req->payload;
+
+    // --- 1. Đọc Token ---
+    if (sscanf(ptr, "%d", &req_token) != 1)
+    {
+        invalid_message_response(sockfd);
+        return;
+    }
+
+    // --- 2. Validate Token ---
+    if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    {
+        invalid_token_response(sockfd);
+        return;
+    }
+
+    // --- 3. Build Response Payload ---
+    char payload_buffer[PAYLOAD_SIZE];
+    int current_len = 0;
+
+    // A. Thêm Device ID (I=...)
+    current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                            "I=%d ", FD.device_id);
+
+    // B. Thêm Trạng thái hoạt động (S=...)
+    current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                            "S=%d ", FD.active);
+
+    // C. Thêm Số lượng lần cho ăn (N=...)
+    current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                            "N=%d", FD.num_feedings);
+
+    // D. Thêm các Thời gian cho ăn (T1=HH:MM, T2=HH:MM ...)
+    for (int i = 0; i < FD.num_feedings; i++)
+    {
+        current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                                " T%d=%02d:%02d",
+                                i + 1,
+                                FD.feeding_times[i].hour,
+                                FD.feeding_times[i].minute);
+    }
+
+    // --- 4. Send Info Response ---
+    res.code = CODE_GET_FEEDER_DEVICE_INFO_OK;
+    strcpy(res.payload, payload_buffer);
+
+    send_all(sockfd, &res, sizeof(res));
+    printf("[GET INFO DEVICE] Responded Code %d Payload: %s\n", res.code, res.payload);
+}
+
 void feeder_handler(int sock, struct Message *msg)
 {
     switch (msg->type)
@@ -157,6 +212,8 @@ void feeder_handler(int sock, struct Message *msg)
     case TYPE_SET_FEEDER_DEVICE:
         handle_setup_device(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
         break;
+    case TYPE_GET_FEEDER_DEVICE_INFO:
+        handle_get_feeder_device_info(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
     default:
         invalid_message_response(sock);
         break;

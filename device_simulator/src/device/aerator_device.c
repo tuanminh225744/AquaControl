@@ -171,6 +171,66 @@ void handle_setup_aerator_device(int sockfd, struct Message *req, int *tokenPtr,
     printf("[SETUP DEVICE] Responded Code %d %s\n", res.code, res.payload);
 }
 
+void handle_get_aerator_device_info(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+{
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+    int req_token;
+    char *ptr = req->payload;
+
+    // --- 1. Đọc Token ---
+    if (sscanf(ptr, "%d", &req_token) != 1)
+    {
+        invalid_message_response(sockfd);
+        return;
+    }
+
+    // --- 2. Validate Token ---
+    if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    {
+        invalid_token_response(sockfd);
+        return;
+    }
+
+    // --- 3. Build Response Payload ---
+    char payload_buffer[PAYLOAD_SIZE];
+    int current_len = 0;
+
+    // A. Thêm Device ID (I=...)
+    current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                            "I=%d ", AD.device_id);
+
+    // B. Thêm Trạng thái hoạt động (S=...)
+    current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                            "S=%d ", AD.active);
+
+    // C. Thêm Tốc độ RPM (C=...)
+    current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                            "C=%.2lf ", AD.rpm);
+
+    // D. Thêm Số lượng khoảng thời gian (N=...)
+    current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                            "N=%d", AD.num_intervals);
+
+    // E. Thêm các Khoảng thời gian (T1=HH:MM-HH:MM ...)
+    for (int i = 0; i < AD.num_intervals; i++)
+    {
+        current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
+                                " T%d=%02d:%02d-%02d:%02d",
+                                i + 1,
+                                AD.intervals[i].start_hour,
+                                AD.intervals[i].start_minute,
+                                AD.intervals[i].end_hour,
+                                AD.intervals[i].end_minute);
+    }
+
+    res.code = CODE_GET_AERATOR_DEVICE_INFO_OK;
+    strcpy(res.payload, payload_buffer);
+
+    send_all(sockfd, &res, sizeof(res));
+    printf("[GET INFO DEVICE] Responded Code %d Payload: %s\n", res.code, res.payload);
+}
+
 void aerator_handler(int sock, struct Message *msg)
 {
     switch (msg->type)
@@ -190,6 +250,8 @@ void aerator_handler(int sock, struct Message *msg)
     case TYPE_SET_AERATOR_DEVICE:
         handle_setup_aerator_device(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
         break;
+    case TYPE_GET_AERATOR_DEVICE_INFO:
+        handle_get_aerator_device_info(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
     default:
         invalid_message_response(sock);
         break;
