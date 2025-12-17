@@ -22,4 +22,5 @@ void handle_turn_on_request(int sockfd, struct Message *req, int *tokenPtr, int 
 void handle_turn_off_request(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr);
 void invalid_message_response(int sockfd);
 void invalid_token_response(int sockfd);
+void device_not_active_response(int sockfd);
 #endif
