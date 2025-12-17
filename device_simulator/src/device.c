@@ -39,6 +39,17 @@ void invalid_token_response(int sockfd)
     send_all(sockfd, &res, sizeof(res));
 }
 
+void device_not_active_response(int sockfd)
+{
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+
+    res.code = CODE_DEVICE_OFF;
+    strcpy(res.payload, "Device is OFF");
+
+    send_all(sockfd, &res, sizeof(res));
+}
+
 void handle_scan_request(int sockfd, struct Message *req, int device_id, char *device_type)
 {
     struct Message res;

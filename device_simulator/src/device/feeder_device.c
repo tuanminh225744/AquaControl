@@ -124,6 +124,12 @@ void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *ac
         return;
     }
 
+    if (!(*activePtr))
+    {
+        device_not_active_response(sockfd);
+        return;
+    }
+
     FD.num_feedings = req_num_feedings;
     for (int i = 0; i < req_num_feedings; i++)
     {
@@ -159,7 +165,14 @@ void handle_get_feeder_device_info(int sockfd, struct Message *req, int *tokenPt
         return;
     }
 
-    // --- 3. Build Response Payload ---
+    // --- 3. Check Active Status ---
+    if (!(*activePtr))
+    {
+        device_not_active_response(sockfd);
+        return;
+    }
+
+    // --- 4. Build Response Payload ---
     char payload_buffer[PAYLOAD_SIZE];
     int current_len = 0;
 
@@ -185,12 +198,41 @@ void handle_get_feeder_device_info(int sockfd, struct Message *req, int *tokenPt
                                 FD.feeding_times[i].minute);
     }
 
-    // --- 4. Send Info Response ---
+    // --- 5. Send Info Response ---
     res.code = CODE_GET_FEEDER_DEVICE_INFO_OK;
     strcpy(res.payload, payload_buffer);
 
     send_all(sockfd, &res, sizeof(res));
     printf("[GET INFO DEVICE] Responded Code %d Payload: %s\n", res.code, res.payload);
+}
+
+void handle_manual_feed(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+{
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+    int req_token;
+    if (sscanf(req->payload, "%d", &req_token) != 1)
+    {
+        invalid_message_response(sockfd);
+        return;
+    }
+    else if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    {
+        invalid_token_response(sockfd);
+        return;
+    }
+    else if (!(*activePtr))
+    {
+        device_not_active_response(sockfd);
+        return;
+    }
+    else
+    {
+        res.code = CODE_MANUAL_FEED_OK;
+        strcpy(res.payload, "Manual Feed Success");
+    }
+    send_all(sockfd, &res, sizeof(res));
+    printf("[MANUAL FEED] Responded Code %d %s\n", res.code, res.payload);
 }
 
 void feeder_handler(int sock, struct Message *msg)
@@ -214,6 +256,10 @@ void feeder_handler(int sock, struct Message *msg)
         break;
     case TYPE_GET_FEEDER_DEVICE_INFO:
         handle_get_feeder_device_info(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        break;
+    case TYPE_MANUAL_FEED:
+        handle_manual_feed(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        break;
     default:
         invalid_message_response(sock);
         break;

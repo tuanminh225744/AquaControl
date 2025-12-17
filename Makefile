@@ -8,7 +8,7 @@ LDFLAGS = -lpthread
 # Controller
 CONTROLLER = controller
 CONTROLLER_SRC = controller_app/src
-CONTROLLER_OBJS = $(CONTROLLER_SRC)/controller.c $(CONTROLLER_SRC)/set_device.c $(CONTROLLER_SRC)/get_device_info.c $(CONTROLLER_SRC)/turn_on_off.c $(COMMON_SRC)/network_utils.c
+CONTROLLER_OBJS = $(CONTROLLER_SRC)/controller.c $(CONTROLLER_SRC)/set_device.c $(CONTROLLER_SRC)/get_device_info.c $(CONTROLLER_SRC)/manual_device_control.c $(CONTROLLER_SRC)/turn_on_off.c $(COMMON_SRC)/network_utils.c
 
 # Devices
 DEVICE_SRC = device_simulator/src

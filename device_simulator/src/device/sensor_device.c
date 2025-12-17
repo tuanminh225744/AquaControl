@@ -63,7 +63,14 @@ void handle_get_sensor_device_info(int sockfd, struct Message *req, int *tokenPt
         return;
     }
 
-    // --- 3. Build Response Payload ---
+    // --- 3. Check Active Status ---
+    if (!(*activePtr))
+    {
+        device_not_active_response(sockfd);
+        return;
+    }
+
+    // --- 4. Build Response Payload ---
     char payload_buffer[PAYLOAD_SIZE];
     int current_len = 0;
 
@@ -73,7 +80,7 @@ void handle_get_sensor_device_info(int sockfd, struct Message *req, int *tokenPt
 
     // B. Thêm Trạng thái hoạt động (S=...)
     current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
-                            "S=%d ", SD.active); // 1: ON, 0: OFF
+                            "S=%d ", SD.active);
 
     // C. Thêm Độ mặn (SAL=...)
     current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
@@ -87,7 +94,7 @@ void handle_get_sensor_device_info(int sockfd, struct Message *req, int *tokenPt
     current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
                             "PH=%.2lf", SD.pH);
 
-    // --- 4. Send Info Response ---
+    // --- 5. Send Info Response ---
     res.code = CODE_GET_SENSOR_DEVICE_INFO_OK;
     strcpy(res.payload, payload_buffer);
 
@@ -110,6 +117,9 @@ void sensor_handler(int sock, struct Message *msg)
         break;
     case TYPE_TURN_OFF:
         handle_turn_off_request(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        break;
+    case TYPE_GET_SENSOR_DEVICE_INFO:
+        handle_get_sensor_device_info(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
         break;
     default:
         invalid_message_response(sock);

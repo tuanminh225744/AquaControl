@@ -12,5 +12,8 @@ void get_aerator_device_info(int sock, int token);
 void get_feeder_device_info(int sock, int token);
 void get_ph_regulator_device_info(int sock, int token);
 void get_sensor_device_info(int sock, int token);
+void manual_feed(int sock, int token);
+void manual_pump(int sock, int token);
+void manual_aerate(int sock, int token);
 
 #endif

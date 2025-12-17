@@ -64,6 +64,11 @@ void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *ac
         invalid_token_response(sockfd);
         return;
     }
+    else if (!(*activePtr))
+    {
+        device_not_active_response(sockfd);
+        return;
+    }
     else
     {
         res.code = CODE_SET_PH_REGULATOR_DEVICE_OK;
@@ -97,7 +102,14 @@ void handle_get_pH_regulator_device_info(int sockfd, struct Message *req, int *t
         return;
     }
 
-    // --- 3. Build Response Payload ---
+    // --- 3. Check Active Status ---
+    if (!(*activePtr))
+    {
+        device_not_active_response(sockfd);
+        return;
+    }
+
+    // --- 4. Build Response Payload ---
     char payload_buffer[PAYLOAD_SIZE];
     int current_len = 0;
 
@@ -117,7 +129,7 @@ void handle_get_pH_regulator_device_info(int sockfd, struct Message *req, int *t
     current_len += snprintf(payload_buffer + current_len, PAYLOAD_SIZE - current_len,
                             "W_CA=%.2lf", PRD.w_ca);
 
-    // --- 4. Send Info Response ---
+    // --- 5. Send Info Response ---
     res.code = CODE_GET_PH_REGULATOR_DEVICE_INFO_OK;
     strcpy(res.payload, payload_buffer);
 

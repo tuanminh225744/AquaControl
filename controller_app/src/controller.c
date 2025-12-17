@@ -307,16 +307,19 @@ int main()
                 {
                     printf("7. Set pump device \n");
                     printf("8. Get pump device info \n");
+                    printf("17. Manual pump \n");
                 }
                 else if (strstr(devices[currentId].device_type, "AERATOR") != NULL)
                 {
                     printf("9. Set aerator device \n");
                     printf("10. Get aerator device info \n");
+                    printf("18. Manual aerate \n");
                 }
                 else if (strstr(devices[currentId].device_type, "FEEDER") != NULL)
                 {
                     printf("11. Set feeder device \n");
                     printf("12. Get feeder device info\n");
+                    printf("19. Manual feed \n");
                 }
                 else if (strstr(devices[currentId].device_type, "PH") != NULL)
                 {
@@ -388,6 +391,12 @@ int main()
             break;
         }
 
+        case 17: // MANUAL PUMP
+        {
+            manual_pump(devices[currentId].sockfd, devices[currentId].token);
+            break;
+        }
+
         case 9: // SET AERATOR DEVICE
         {
 
@@ -398,6 +407,12 @@ int main()
         case 10: // GET AERATOR DEVICE INFO
         {
             get_aerator_device_info(devices[currentId].sockfd, devices[currentId].token);
+            break;
+        }
+
+        case 18: // MANUAL AERATE
+        {
+            manual_aerate(devices[currentId].sockfd, devices[currentId].token);
             break;
         }
 
@@ -413,6 +428,13 @@ int main()
             get_feeder_device_info(devices[currentId].sockfd, devices[currentId].token);
             break;
         }
+
+        case 19: // MANUAL FEED
+        {
+            manual_feed(devices[currentId].sockfd, devices[currentId].token);
+            break;
+        }
+
         case 13: // SET PH REGULATOR DEVICE
         {
 

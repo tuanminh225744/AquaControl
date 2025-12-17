@@ -107,9 +107,24 @@ void handle_setup_aerator_device(int sockfd, struct Message *req, int *tokenPtr,
         invalid_message_response(sockfd);
         return;
     }
+
+    // --- 2. Validate Token ---
+    if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    {
+        invalid_token_response(sockfd);
+        return;
+    }
+
+    // --- 3. Check Active Status ---
+    if (!(*activePtr))
+    {
+        device_not_active_response(sockfd);
+        return;
+    }
+
     ptr += offset;
 
-    // --- 2. Đọc RPM (C=...) ---
+    // --- 4. Đọc RPM (C=...) ---
     if (sscanf(ptr, " C=%lf%n", &req_rpm, &offset) != 1 || req_rpm < 0)
     {
         invalid_message_response(sockfd);
@@ -117,7 +132,7 @@ void handle_setup_aerator_device(int sockfd, struct Message *req, int *tokenPtr,
     }
     ptr += offset;
 
-    // --- 3. Đọc Số lượng Khoảng thời gian (N=...) ---
+    // --- 5. Đọc Số lượng Khoảng thời gian (N=...) ---
     if (sscanf(ptr, " N=%d%n", &req_num_intervals, &offset) != 1 ||
         req_num_intervals < 0 || req_num_intervals > MAX_SCHEDULE_INTERVALS)
     {
@@ -126,7 +141,7 @@ void handle_setup_aerator_device(int sockfd, struct Message *req, int *tokenPtr,
     }
     ptr += offset;
 
-    // --- 4. Đọc các Khoảng thời gian (T1=HH:MM-HH:MM ...) ---
+    // --- 6. Đọc các Khoảng thời gian (T1=HH:MM-HH:MM ...) ---
     for (int i = 0; i < req_num_intervals; i++)
     {
         char format_str[32];
@@ -145,14 +160,7 @@ void handle_setup_aerator_device(int sockfd, struct Message *req, int *tokenPtr,
         ptr += offset;
     }
 
-    // --- 5. Validate Token ---
-    if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
-    {
-        invalid_token_response(sockfd);
-        return;
-    }
-
-    // --- 6. Update device settings ---
+    // --- 7. Update device settings ---
     AD.rpm = req_rpm;
     AD.num_intervals = req_num_intervals;
     for (int i = 0; i < req_num_intervals; i++)
@@ -163,7 +171,7 @@ void handle_setup_aerator_device(int sockfd, struct Message *req, int *tokenPtr,
         AD.intervals[i].end_minute = temp_intervals[i][3];
     }
 
-    // --- 7. Send Success Response ---
+    // --- 8. Send Success Response ---
     res.code = CODE_SET_AERATOR_DEVICE_OK;
     strcpy(res.payload, "Aerator Setup Success");
 
@@ -192,7 +200,14 @@ void handle_get_aerator_device_info(int sockfd, struct Message *req, int *tokenP
         return;
     }
 
-    // --- 3. Build Response Payload ---
+    // --- 3 Kiểm tra trạng thái hoạt động ---
+    if (!(*activePtr))
+    {
+        device_not_active_response(sockfd);
+        return;
+    }
+
+    // --- 4. Build Response Payload ---
     char payload_buffer[PAYLOAD_SIZE];
     int current_len = 0;
 
@@ -231,6 +246,37 @@ void handle_get_aerator_device_info(int sockfd, struct Message *req, int *tokenP
     printf("[GET INFO DEVICE] Responded Code %d Payload: %s\n", res.code, res.payload);
 }
 
+void handle_manual_aerate(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+{
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+    int req_token;
+
+    if (sscanf(req->payload, "%d", &req_token) != 1)
+    {
+        invalid_message_response(sockfd);
+        return;
+    }
+    else if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    {
+        invalid_token_response(sockfd);
+        return;
+    }
+    else if (!(*activePtr))
+    {
+        device_not_active_response(sockfd);
+        return;
+    }
+    else
+    {
+        res.code = CODE_MANUAL_AERATE_OK;
+        strcpy(res.payload, "Manual Aerate Success");
+    }
+
+    send_all(sockfd, &res, sizeof(res));
+    printf("[MANUAL AERATE] Responded Code %d %s\n", res.code, res.payload);
+}
+
 void aerator_handler(int sock, struct Message *msg)
 {
     switch (msg->type)
@@ -252,6 +298,10 @@ void aerator_handler(int sock, struct Message *msg)
         break;
     case TYPE_GET_AERATOR_DEVICE_INFO:
         handle_get_aerator_device_info(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        break;
+    case TYPE_MANUAL_AERATE:
+        handle_manual_aerate(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        break;
     default:
         invalid_message_response(sock);
         break;
