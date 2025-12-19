@@ -3,7 +3,7 @@
 # ========================
 CC = gcc
 CFLAGS = -Wall -g -Icommon
-LDFLAGS = -lpthread
+# LDFLAGS = -lpthread
 
 # Controller
 CONTROLLER = controller
@@ -24,14 +24,14 @@ all: $(CONTROLLER) $(DEVICES)
 # Build controller
 # ========================
 $(CONTROLLER): $(CONTROLLER_OBJS)
-	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) $^ -o $@ 
 
 # ========================
 # Build mỗi device riêng
 # ========================
 # Pattern: mỗi thiết bị có main riêng -> tạo 1 executable
 $(DEVICES):
-	$(CC) $(CFLAGS) $(DEVICE_SRC)/device_server.c $(DEVICE_SRC)/device.c $(DEVICE_SRC)/device/$@_device.c $(COMMON_SRC)/network_utils.c -o $@ $(LDFLAGS)
+	$(CC) $(CFLAGS) $(DEVICE_SRC)/device_server.c $(DEVICE_SRC)/device.c $(DEVICE_SRC)/device/$@_device.c $(COMMON_SRC)/network_utils.c -o $@ 
 
 # ========================
 # Xóa file build

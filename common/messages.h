@@ -63,7 +63,7 @@
 
 // --- SIZE ---
 #define PAYLOAD_SIZE 256
-#define MAX_CLIENTS 10
+#define MAX_CLIENTS 1024
 #define MAX_FEEDING_TIMES 5
 #define MAX_SCHEDULE_INTERVALS 5
 
