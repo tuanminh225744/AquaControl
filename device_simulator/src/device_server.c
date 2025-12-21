@@ -105,8 +105,7 @@ int start_device_server(int port, handle_msg_fn handler)
             }
             else
             {
-                printf("[DEVICE] New connection from %s\n",
-                       inet_ntoa(client_addr.sin_addr));
+                printf("[DEVICE] New connection from %s\n", inet_ntoa(client_addr.sin_addr));
 
                 if (do_handshake(connfd) < 0)
                 {

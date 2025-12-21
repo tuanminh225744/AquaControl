@@ -45,7 +45,7 @@ void init_device_list()
     }
 }
 
-void connect_new_device()
+void connect_new_device(char *ip, int port)
 {
     int slot = -1;
     for (int i = 0; i < MAX_DEVICES; i++)
@@ -63,16 +63,23 @@ void connect_new_device()
         return;
     }
 
-    char ip[20];
-    int port;
-    printf("Enter ip (Ex 127.0.0.1): ");
-    scanf("%s", ip);
-    printf("Enter Port (Ex 5500): ");
-    scanf("%d", &port);
-    clear_stdin();
+    // char ip[20];
+    // int port;
+    // printf("Enter ip (Ex 127.0.0.1): ");
+    // scanf("%s", ip);
+    // printf("Enter Port (Ex 5500): ");
+    // scanf("%d", &port);
+    // clear_stdin();
 
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (sockfd < 0)
+    {
+        perror("socket");
+        return;
+    }
+
     struct sockaddr_in serv_addr;
+    memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
     serv_addr.sin_addr.s_addr = inet_addr(ip);
@@ -116,6 +123,15 @@ void connect_new_device()
     printf("[SUCCESS] Connected at slot [%d]\n", slot);
 }
 
+void connect_devices()
+{
+    for (int i = 0; i < 5; i++)
+    {
+
+        connect_new_device("127.0.0.1", 5000 + 100 * i);
+    }
+}
+
 void list_device()
 {
     printf("=========== List devices ============\n");
@@ -124,7 +140,7 @@ void list_device()
     {
         if (devices[i].active == 1)
         {
-            printf("%d %s:%d | ID: %d | %d\n", i, devices[i].ip, devices[i].port, devices[i].device_id, devices[i].is_logged_in);
+            printf("%d %s:%d\n", i, devices[i].ip, devices[i].port);
             count++;
         }
     }
@@ -135,7 +151,7 @@ void list_device()
         return;
     }
 
-    printf("Enter ID of slot to tranfer device");
+    printf("Enter ID of slot to tranfer device: ");
     int id;
     scanf("%d", &id);
     clear_stdin();
@@ -144,6 +160,10 @@ void list_device()
     {
         currentId = id;
         printf("Moved the device to the slot %d\n", id);
+    }
+    else
+    {
+        printf("Invalid slot ID!\n");
     }
 }
 
@@ -348,7 +368,8 @@ int main()
         {
         case 1: // CONNECT NEW DEVICE
         {
-            connect_new_device();
+            // connect_new_device();
+            connect_devices();
             break;
         }
         case 2: // LIST DEVICE
