@@ -18,14 +18,14 @@ typedef struct
     double pH;
     char device_type[20];
     char password[20];
-    int token[MAX_CLIENTS];
+    TokenSession token_sessions[MAX_CLIENTS];
     int number_of_tokens;
     int fish_pond_id;
 } SensorDevice;
 
 SensorDevice SD;
 int *activePtr = &SD.active;
-int *tokenPtr = SD.token;
+TokenSession *tokenPtr = SD.token_sessions;
 int *number_of_tokensPtr = &SD.number_of_tokens;
 
 void create_device()
@@ -42,7 +42,7 @@ void create_device()
     printf("[DEVICE] Create device successful.\n");
 }
 
-void handle_get_sensor_device_info(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+void handle_get_sensor_device_info(int sockfd, struct Message *req, TokenSession *tokenPtr, int *activePtr, int *number_of_tokensPtr)
 {
     struct Message res;
     memset(&res, 0, sizeof(res));
@@ -57,7 +57,7 @@ void handle_get_sensor_device_info(int sockfd, struct Message *req, int *tokenPt
     }
 
     // --- 2. Validate Token ---
-    if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    if (!handle_check_token(sockfd, req_token, tokenPtr, *number_of_tokensPtr))
     {
         invalid_token_response(sockfd);
         return;

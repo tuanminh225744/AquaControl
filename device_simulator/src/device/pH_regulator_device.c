@@ -17,14 +17,14 @@ typedef struct
     double w_ca;
     char device_type[20];
     char password[20];
-    int token[MAX_CLIENTS];
+    TokenSession token_sessions[MAX_CLIENTS];
     int number_of_tokens;
     int fish_pond_id;
 } PHRegulatorDevice;
 
 PHRegulatorDevice PRD;
 int *activePtr = &PRD.active;
-int *tokenPtr = PRD.token;
+TokenSession *tokenPtr = PRD.token_sessions;
 int *number_of_tokensPtr = &PRD.number_of_tokens;
 
 void create_device()
@@ -45,7 +45,7 @@ void create_device()
     printf("[DEVICE] Create device successful.\n");
 }
 
-void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+void handle_setup_device(int sockfd, struct Message *req, TokenSession *tokenPtr, int *activePtr, int *number_of_tokensPtr)
 {
     struct Message res;
     memset(&res, 0, sizeof(res));
@@ -59,7 +59,7 @@ void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *ac
         invalid_message_response(sockfd);
         return;
     }
-    else if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    else if (!handle_check_token(sockfd, req_token, tokenPtr, *number_of_tokensPtr))
     {
         invalid_token_response(sockfd);
         return;
@@ -81,7 +81,7 @@ void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *ac
     printf("[SETUP DEVICE] Responded Code %d %s\n", res.code, res.payload);
 }
 
-void handle_get_pH_regulator_device_info(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+void handle_get_pH_regulator_device_info(int sockfd, struct Message *req, TokenSession *tokenPtr, int *activePtr, int *number_of_tokensPtr)
 {
     struct Message res;
     memset(&res, 0, sizeof(res));
@@ -96,7 +96,7 @@ void handle_get_pH_regulator_device_info(int sockfd, struct Message *req, int *t
     }
 
     // --- 2. Validate Token ---
-    if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    if (!handle_check_token(sockfd, req_token, tokenPtr, *number_of_tokensPtr))
     {
         invalid_token_response(sockfd);
         return;

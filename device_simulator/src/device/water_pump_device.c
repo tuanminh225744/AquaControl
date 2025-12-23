@@ -17,13 +17,13 @@ typedef struct
     double duration;
     char device_type[20];
     char password[20];
-    int token[MAX_CLIENTS];
+    TokenSession token_sessions[MAX_CLIENTS];
     int number_of_tokens;
     int fish_pond_id;
 } WaterPumpDevice;
 
 WaterPumpDevice WPD;
-int *tokenPtr = WPD.token;
+TokenSession *tokenPtr = WPD.token_sessions;
 int *number_of_tokensPtr = &WPD.number_of_tokens;
 int *activePtr = &WPD.active;
 
@@ -45,7 +45,7 @@ void create_device()
     printf("[DEVICE] Create device successful.\n");
 }
 
-void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+void handle_setup_device(int sockfd, struct Message *req, TokenSession *tokenPtr, int *activePtr, int *number_of_tokensPtr)
 {
     struct Message res;
     memset(&res, 0, sizeof(res));
@@ -59,7 +59,7 @@ void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *ac
         invalid_message_response(sockfd);
         return;
     }
-    else if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    else if (!handle_check_token(sockfd, req_token, tokenPtr, *number_of_tokensPtr))
     {
         invalid_token_response(sockfd);
         return;
@@ -81,7 +81,7 @@ void handle_setup_device(int sockfd, struct Message *req, int *tokenPtr, int *ac
     printf("[SET DEVICE] Responded Code %d %s\n", res.code, res.payload);
 }
 
-void handle_get_water_pump_device_info(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+void handle_get_water_pump_device_info(int sockfd, struct Message *req, TokenSession *tokenPtr, int *activePtr, int *number_of_tokensPtr)
 {
     struct Message res;
     memset(&res, 0, sizeof(res));
@@ -97,7 +97,7 @@ void handle_get_water_pump_device_info(int sockfd, struct Message *req, int *tok
     }
 
     // --- 2. Validate Token ---
-    if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    if (!handle_check_token(sockfd, req_token, tokenPtr, *number_of_tokensPtr))
     {
         invalid_token_response(sockfd);
         return;
@@ -138,7 +138,7 @@ void handle_get_water_pump_device_info(int sockfd, struct Message *req, int *tok
     printf("[GET INFO DEVICE] Responded Code %d Payload: %s\n", res.code, res.payload);
 }
 
-void handle_manual_pump(int sockfd, struct Message *req, int *tokenPtr, int *activePtr, int *number_of_tokensPtr)
+void handle_manual_pump(int sockfd, struct Message *req, TokenSession *tokenPtr, int *activePtr, int *number_of_tokensPtr)
 {
     struct Message res;
     memset(&res, 0, sizeof(res));
@@ -149,7 +149,7 @@ void handle_manual_pump(int sockfd, struct Message *req, int *tokenPtr, int *act
         invalid_message_response(sockfd);
         return;
     }
-    else if (!handle_check_token(req_token, tokenPtr, *number_of_tokensPtr))
+    else if (!handle_check_token(sockfd, req_token, tokenPtr, *number_of_tokensPtr))
     {
         invalid_token_response(sockfd);
         return;
