@@ -7,7 +7,7 @@
 // --- MESSAGE (TYPE) ---
 //
 #define TYPE_SCAN 1
-#define TYPE_CONNECT 2
+#define TYPE_LOGIN 2
 #define TYPE_CHPASS 3
 #define TYPE_GETINFO 4
 #define TYPE_TURN_ON 5

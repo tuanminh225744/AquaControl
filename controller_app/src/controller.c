@@ -206,7 +206,7 @@ void login_device()
 {
     struct Message msg, res;
     memset(&msg, 0, sizeof(msg));
-    msg.type = TYPE_CONNECT;
+    msg.type = TYPE_LOGIN;
     msg.code = 0;
 
     int target_id;
@@ -216,8 +216,7 @@ void login_device()
     scanf("%d", &target_id);
     clear_stdin();
     printf("Please enter password: ");
-    fgets(password, sizeof(password), stdin);
-    password[sizeof(password) - 1] = '\0';
+    scanf("%s", password);
 
     snprintf(msg.payload, sizeof(msg.payload), "%d %s", target_id, password);
 

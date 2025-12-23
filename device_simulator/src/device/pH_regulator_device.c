@@ -9,6 +9,8 @@
 #include "../../../common/messages.h"
 #include "../../../common/network_utils.h"
 
+#define FILE_LOG "pH_regulator_device.log"
+
 typedef struct
 {
     int device_id;
@@ -56,17 +58,17 @@ void handle_setup_device(int sockfd, struct Message *req, TokenSession *tokenPtr
 
     if (k != 3)
     {
-        invalid_message_response(sockfd);
+        invalid_message_response(sockfd, req, FILE_LOG);
         return;
     }
     else if (!handle_check_token(sockfd, req_token, tokenPtr, *number_of_tokensPtr))
     {
-        invalid_token_response(sockfd);
+        invalid_token_response(sockfd, req, FILE_LOG);
         return;
     }
     else if (!(*activePtr))
     {
-        device_not_active_response(sockfd);
+        device_not_active_response(sockfd, req, FILE_LOG);
         return;
     }
     else
@@ -78,6 +80,7 @@ void handle_setup_device(int sockfd, struct Message *req, TokenSession *tokenPtr
     }
 
     send_all(sockfd, &res, sizeof(res));
+    handle_write_device_log(sockfd, FILE_LOG, req->type, req->payload, res.code, res.payload);
     printf("[SETUP DEVICE] Responded Code %d %s\n", res.code, res.payload);
 }
 
@@ -91,21 +94,21 @@ void handle_get_pH_regulator_device_info(int sockfd, struct Message *req, TokenS
     // --- 1. Đọc Token ---
     if (sscanf(ptr, "%d", &req_token) != 1)
     {
-        invalid_message_response(sockfd);
+        invalid_message_response(sockfd, req, FILE_LOG);
         return;
     }
 
     // --- 2. Validate Token ---
     if (!handle_check_token(sockfd, req_token, tokenPtr, *number_of_tokensPtr))
     {
-        invalid_token_response(sockfd);
+        invalid_token_response(sockfd, req, FILE_LOG);
         return;
     }
 
     // --- 3. Check Active Status ---
     if (!(*activePtr))
     {
-        device_not_active_response(sockfd);
+        device_not_active_response(sockfd, req, FILE_LOG);
         return;
     }
 
@@ -134,6 +137,7 @@ void handle_get_pH_regulator_device_info(int sockfd, struct Message *req, TokenS
     strcpy(res.payload, payload_buffer);
 
     send_all(sockfd, &res, sizeof(res));
+    handle_write_device_log(sockfd, FILE_LOG, req->type, req->payload, res.code, res.payload);
     printf("[GET INFO DEVICE] Responded Code %d Payload: %s\n", res.code, res.payload);
 }
 
@@ -142,16 +146,16 @@ void pH_regulator_handler(int sock, struct Message *msg)
     switch (msg->type)
     {
     case TYPE_SCAN:
-        handle_scan_request(sock, msg, PRD.device_id, PRD.device_type);
+        handle_scan_request(sock, msg, PRD.device_id, PRD.device_type, FILE_LOG);
         break;
-    case TYPE_CONNECT:
-        handle_connect_request(sock, msg, PRD.device_id, PRD.device_type, PRD.password, tokenPtr, number_of_tokensPtr);
+    case TYPE_LOGIN:
+        handle_login_request(sock, msg, PRD.device_id, PRD.device_type, PRD.password, tokenPtr, number_of_tokensPtr, FILE_LOG);
         break;
     case TYPE_TURN_ON:
-        handle_turn_on_request(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        handle_turn_on_request(sock, msg, tokenPtr, activePtr, number_of_tokensPtr, FILE_LOG);
         break;
     case TYPE_TURN_OFF:
-        handle_turn_off_request(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        handle_turn_off_request(sock, msg, tokenPtr, activePtr, number_of_tokensPtr, FILE_LOG);
         break;
     case TYPE_SET_PH_REGULATOR_DEVICE:
         handle_setup_device(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
@@ -160,7 +164,7 @@ void pH_regulator_handler(int sock, struct Message *msg)
         handle_get_pH_regulator_device_info(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
         break;
     default:
-        invalid_message_response(sock);
+        invalid_message_response(sock, msg, FILE_LOG);
         break;
     }
 }

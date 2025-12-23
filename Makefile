@@ -42,6 +42,8 @@ clean:
 	rm -f $(CONTROLLER_SRC)/*.o
 	rm -f $(DEVICE_SRC)/*.o
 	rm -f $(DEVICE_SRC)/device/*.o
+	rm -f *.log
+	rm -f *.txt
 
 # ========================
 # Không phải file
