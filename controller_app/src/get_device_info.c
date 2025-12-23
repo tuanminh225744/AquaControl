@@ -26,7 +26,7 @@ void get_pump_device_info(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Get failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Get failed. %d %s\n", res.code, res.payload);
         }
     }
 }
@@ -50,7 +50,7 @@ void get_aerator_device_info(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Get failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Get failed. %d %s\n", res.code, res.payload);
         }
     }
 }
@@ -74,7 +74,7 @@ void get_feeder_device_info(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Get failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Get failed. %d %s\n", res.code, res.payload);
         }
     }
 }
@@ -98,7 +98,7 @@ void get_ph_regulator_device_info(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Get failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Get failed. %d %s\n", res.code, res.payload);
         }
     }
 }
@@ -122,7 +122,7 @@ void get_sensor_device_info(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Get failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Get failed. %d %s\n", res.code, res.payload);
         }
     }
 }

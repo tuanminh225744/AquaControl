@@ -18,7 +18,7 @@ typedef struct
     double pH_min;
     double w_ca;
     char device_type[20];
-    char password[20];
+    char password[MAX_PASS_LENGTH];
     TokenSession token_sessions[MAX_CLIENTS];
     int number_of_tokens;
     int fish_pond_id;
@@ -162,6 +162,9 @@ void pH_regulator_handler(int sock, struct Message *msg)
         break;
     case TYPE_GET_PH_REGULATOR_DEVICE_INFO:
         handle_get_pH_regulator_device_info(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        break;
+    case TYPE_CHPASS:
+        handle_change_password(sock, msg, PRD.password, tokenPtr, activePtr, number_of_tokensPtr, FILE_LOG);
         break;
     default:
         invalid_message_response(sock, msg, FILE_LOG);

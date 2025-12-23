@@ -24,6 +24,7 @@ void handle_write_device_log(int sockfd, char *file_name, int req_type, const ch
 int handle_check_token(int sockfd, int req_token, TokenSession *tokenPtr, int number_of_tokens);
 void handle_scan_request(int sockfd, struct Message *req, int device_id, char *device_type, char *file_name);
 void handle_login_request(int sockfd, struct Message *req, int device_id, char *device_type, char *password, TokenSession *tokenPtr, int *number_of_tokensPtr, char *file_name);
+void handle_change_password(int sockfd, struct Message *req, char *password, TokenSession *tokenPtr, int *activePtr, int *number_of_tokensPtr, char *file_name);
 void handle_turn_on_request(int sockfd, struct Message *req, TokenSession *tokenPtr, int *activePtr, int *number_of_tokensPtr, char *file_name);
 void handle_turn_off_request(int sockfd, struct Message *req, TokenSession *tokenPtr, int *activePtr, int *number_of_tokensPtr, char *file_name);
 void invalid_message_response(int sockfd, struct Message *req, char *file_name);

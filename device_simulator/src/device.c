@@ -210,6 +210,41 @@ void handle_login_request(int sockfd, struct Message *req, int device_id, char *
     printf("[LOGIN] Responded Code %d %s\n", res.code, res.payload);
 }
 
+void handle_change_password(int sockfd, struct Message *req, char *password, TokenSession *tokenPtr, int *activePtr, int *number_of_tokensPtr, char *file_name)
+{
+    struct Message res;
+    memset(&res, 0, sizeof(res));
+    int req_token;
+    char req_old_password[MAX_PASS_LENGTH];
+    char req_new_password[MAX_PASS_LENGTH];
+    int k = sscanf(req->payload, "%d %s %s", &req_token, req_old_password, req_new_password);
+    if (k != 3)
+    {
+        invalid_message_response(sockfd, req, file_name);
+        return;
+    }
+    else if (!handle_check_token(sockfd, req_token, tokenPtr, *number_of_tokensPtr))
+    {
+        invalid_token_response(sockfd, req, file_name);
+        return;
+    }
+    else if (strcmp(req_old_password, password) != 0)
+    {
+        res.code = CODE_OLD_PASS_INCORRECT;
+        strcpy(res.payload, "Old Password Incorrect");
+    }
+    else
+    {
+        strcpy(password, req_new_password);
+        res.code = CODE_CHPASS_OK;
+        strcpy(res.payload, "Change Password Success");
+    }
+
+    send_all(sockfd, &res, sizeof(res));
+    handle_write_device_log(sockfd, file_name, req->type, req->payload, res.code, res.payload);
+    printf("[CHANGE PASS] Responded Code %d %s\n", res.code, res.payload);
+}
+
 void handle_turn_on_request(int sockfd, struct Message *req, TokenSession *tokenPtr, int *activePtr, int *number_of_tokensPtr, char *file_name)
 {
     struct Message res;

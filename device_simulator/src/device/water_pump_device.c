@@ -18,7 +18,7 @@ typedef struct
     double flow_rate;
     double duration;
     char device_type[20];
-    char password[20];
+    char password[MAX_PASS_LENGTH];
     TokenSession token_sessions[MAX_CLIENTS];
     int number_of_tokens;
     int fish_pond_id;
@@ -199,6 +199,9 @@ void water_pump_handler(int sock, struct Message *msg)
         break;
     case TYPE_MANUAL_PUMP:
         handle_manual_pump(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        break;
+    case TYPE_CHPASS:
+        handle_change_password(sock, msg, WPD.password, tokenPtr, activePtr, number_of_tokensPtr, FILE_LOG);
         break;
     default:
         invalid_message_response(sock, msg, FILE_LOG);

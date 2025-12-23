@@ -27,7 +27,7 @@ void turn_on_device(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Turn on failed %d %s\n", res.code, res.payload);
+            printf("[FAILED] Turn on failed %d %s\n", res.code, res.payload);
         }
     }
 }
@@ -52,7 +52,7 @@ void turn_off_device(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Turn off failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Turn off failed. %d %s\n", res.code, res.payload);
         }
     }
 }

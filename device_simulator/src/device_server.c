@@ -153,7 +153,9 @@ int start_device_server(int port, handle_msg_fn handler)
             if (FD_ISSET(sockfd, &readfds))
             {
                 struct Message msg;
+                memset(&msg, 0, sizeof(msg));
                 int n = recv_all(sockfd, &msg, sizeof(msg));
+                msg.payload[sizeof(msg.payload) - 1] = '\0';
 
                 if (n <= 0)
                 {

@@ -19,7 +19,7 @@ typedef struct
     double dissolved_oxygen;
     double pH;
     char device_type[20];
-    char password[20];
+    char password[MAX_PASS_LENGTH];
     TokenSession token_sessions[MAX_CLIENTS];
     int number_of_tokens;
     int fish_pond_id;
@@ -123,6 +123,9 @@ void sensor_handler(int sock, struct Message *msg)
         break;
     case TYPE_GET_SENSOR_DEVICE_INFO:
         handle_get_sensor_device_info(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        break;
+    case TYPE_CHPASS:
+        handle_change_password(sock, msg, SD.password, tokenPtr, activePtr, number_of_tokensPtr, FILE_LOG);
         break;
     default:
         invalid_message_response(sock, msg, FILE_LOG);

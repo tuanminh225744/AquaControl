@@ -22,7 +22,7 @@ typedef struct
         int minute;
     } feeding_times[MAX_FEEDING_TIMES];
     char device_type[20];
-    char password[20];
+    char password[MAX_PASS_LENGTH];
     TokenSession token_sessions[MAX_CLIENTS];
     int number_of_tokens;
     int fish_pond_id;
@@ -264,6 +264,9 @@ void feeder_handler(int sock, struct Message *msg)
         break;
     case TYPE_MANUAL_FEED:
         handle_manual_feed(sock, msg, tokenPtr, activePtr, number_of_tokensPtr);
+        break;
+    case TYPE_CHPASS:
+        handle_change_password(sock, msg, FD.password, tokenPtr, activePtr, number_of_tokensPtr, FILE_LOG);
         break;
     default:
         invalid_message_response(sock, msg, FILE_LOG);

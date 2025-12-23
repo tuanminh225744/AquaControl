@@ -36,7 +36,7 @@ void set_pump_device(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Set failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Set failed. %d %s\n", res.code, res.payload);
         }
     }
 }
@@ -100,7 +100,7 @@ void set_aerator_device(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Set failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Set failed. %d %s\n", res.code, res.payload);
         }
     }
 }
@@ -157,7 +157,7 @@ void set_feeder_device(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Set failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Set failed. %d %s\n", res.code, res.payload);
         }
     }
 }
@@ -191,7 +191,7 @@ void set_ph_regulator_device(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Set failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Set failed. %d %s\n", res.code, res.payload);
         }
     }
 }

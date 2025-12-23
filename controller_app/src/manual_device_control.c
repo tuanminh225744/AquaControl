@@ -24,7 +24,7 @@ void manual_feed(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Manual Feed failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Manual Feed failed. %d %s\n", res.code, res.payload);
         }
     }
 }
@@ -46,7 +46,7 @@ void manual_aerate(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Manual Aerate failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Manual Aerate failed. %d %s\n", res.code, res.payload);
         }
     }
 }
@@ -68,7 +68,7 @@ void manual_pump(int sock, int token)
         }
         else
         {
-            printf("[ERROR] Manual Pump failed. %d %s\n", res.code, res.payload);
+            printf("[FAILED] Manual Pump failed. %d %s\n", res.code, res.payload);
         }
     }
 }

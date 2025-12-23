@@ -59,7 +59,7 @@ void connect_new_device(char *ip, int port)
 
     if (slot == -1)
     {
-        printf("[ERROR] List device is full \n");
+        printf("[FAILED] List device is full \n");
         return;
     }
 
@@ -97,19 +97,21 @@ void connect_new_device(char *ip, int port)
     memset(&res, 0, sizeof(res));
     if (recv_all(sockfd, &res, sizeof(res)) <= 0)
     {
-        printf("[ERROR] Failed to receive response\n");
+        printf("[FAILED] Failed to receive response\n");
         close(sockfd);
         return;
     }
 
-    if (res.code != CODE_CONNECT_OK)
+    if (res.code == CODE_CONNECT_OK)
     {
-        printf("[ERROR] Device connection failed. Code: %d\n", res.code);
+        printf("[SUCCESS] Device connected.\n");
+    }
+    else
+    {
+        printf("[FAILED] Device connection failed. %d %s\n", res.code, res.payload);
         close(sockfd);
         return;
     }
-
-    printf("[SUCCESS] Device connected.\n");
 
     // Lưu vào mảng
     devices[slot].active = 1;
@@ -251,7 +253,41 @@ void login_device()
         }
         else
         {
-            printf("[ERROR] Login failed \n");
+            printf("[FAILED] Login failed \n");
+        }
+    }
+}
+
+void change_password()
+{
+    struct Message msg, res;
+    memset(&msg, 0, sizeof(msg));
+    msg.type = TYPE_CHPASS;
+    msg.code = 0;
+
+    char old_password[MAX_PASS_LENGTH];
+    char new_password[MAX_PASS_LENGTH];
+
+    printf("Please enter old password : ");
+    scanf("%s", old_password);
+    clear_stdin();
+    printf("Please enter new password : ");
+    scanf("%s", new_password);
+    clear_stdin();
+
+    snprintf(msg.payload, sizeof(msg.payload), "%d %s %s", devices[currentId].token, old_password, new_password);
+
+    send_all(devices[currentId].sockfd, &msg, sizeof(msg));
+
+    if (recv_all(devices[currentId].sockfd, &res, sizeof(res)) > 0)
+    {
+        if (res.code == CODE_CHPASS_OK)
+        {
+            printf("[SUCCESS] Change password OK! %d %s\n", res.code, res.payload);
+        }
+        else
+        {
+            printf("[FAILED] Change password failed. %d %s\n", res.code, res.payload);
         }
     }
 }
@@ -308,10 +344,10 @@ int main()
         {
             printf("STATUS: No Device selected \n");
         }
-        printf("------------------------------------\n");
+        printf("=============================\n");
         printf("1. Connect new device\n");
         printf("2. List of devices\n");
-        printf("------------------------------------\n");
+        printf("=============================\n");
         if (currentId != -1 && devices[currentId].active)
         {
             printf("3. Scan \n");
@@ -322,10 +358,10 @@ int main()
                 printf("=============================\n");
                 printf("5. Turn on \n");
                 printf("6. Turn off \n");
-                if (strstr(devices[currentId].device_type, "PUMP") != NULL)
+                if (strstr(devices[currentId].device_type, "WATERPUMP") != NULL)
                 {
-                    printf("7. Set pump device \n");
-                    printf("8. Get pump device info \n");
+                    printf("7. Set water pump device \n");
+                    printf("8. Get water pump device info \n");
                     printf("17. Manual pump \n");
                 }
                 else if (strstr(devices[currentId].device_type, "AERATOR") != NULL)
@@ -340,16 +376,17 @@ int main()
                     printf("12. Get feeder device info\n");
                     printf("19. Manual feed \n");
                 }
-                else if (strstr(devices[currentId].device_type, "PH") != NULL)
+                else if (strstr(devices[currentId].device_type, "PHREGULATOR") != NULL)
                 {
                     printf("13. Set PH regulator device \n");
                     printf("14. Get PH regulator device info\n");
                 }
-                else if (strstr(devices[currentId].device_type, "SCAN") != NULL)
+                else if (strstr(devices[currentId].device_type, "SENSOR") != NULL)
                 {
-                    printf("15. Get scan device info\n");
+                    printf("15. Get sensor device info\n");
                 }
                 printf("16. Log out\n");
+                printf("20. Change password\n");
             }
         }
         printf("0. Exit\n");
@@ -471,15 +508,20 @@ int main()
             get_sensor_device_info(devices[currentId].sockfd, devices[currentId].token);
             break;
         }
-        case 0: // EXIT
-        {
-            exit_device();
-            return 0;
-        }
         case 16: // LOGOUT
         {
             logout_device();
             break;
+        }
+        case 20: // CHANGE PASSWORD
+        {
+            change_password();
+            break;
+        }
+        case 0: // EXIT
+        {
+            exit_device();
+            return 0;
         }
         default:
         {
