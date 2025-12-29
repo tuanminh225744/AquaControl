@@ -78,9 +78,9 @@ void handle_write_device_log(int sockfd, char *file_name, int req_type, const ch
             time_buf,
             client_addr,
             msg_type_to_string(req_type),
-            (req_payload && req_payload[0]) ? req_payload : "-",
+            req_payload,
             res_code,
-            (res_payload && res_payload[0]) ? res_payload : "-");
+            res_payload);
 
     fclose(log_file);
 }
