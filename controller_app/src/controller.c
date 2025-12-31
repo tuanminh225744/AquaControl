@@ -127,10 +127,14 @@ void connect_new_device(char *ip, int port)
 
 void connect_devices()
 {
+    char ip[20];
+    printf("Enter ip (Ex 127.0.0.1): ");
+    scanf("%s", ip);
+    clear_stdin();
     for (int i = 0; i < 5; i++)
     {
 
-        connect_new_device("127.0.0.1", 5000 + 100 * i);
+        connect_new_device(ip, 5000 + 100 * i);
     }
 }
 
