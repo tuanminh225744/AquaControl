@@ -91,7 +91,12 @@ void connect_new_device(char *ip, int port)
         return;
     }
 
-    send_line(sockfd, "HELLO");
+    struct Message req;
+    memset(&req, 0, sizeof(req));
+    req.type = TYPE_HANDSHAKE;
+    strcpy(req.payload, "HELLO");
+    send_all(sockfd, &req, sizeof(req));
+    // send_line(sockfd, "HELLO");
 
     struct Message res;
     memset(&res, 0, sizeof(res));
@@ -102,7 +107,7 @@ void connect_new_device(char *ip, int port)
         return;
     }
 
-    if (res.code == CODE_CONNECT_OK)
+    if (res.code == CODE_HANDSHAKE_OK)
     {
         printf("[SUCCESS] Device connected.\n");
     }

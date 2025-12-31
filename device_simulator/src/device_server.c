@@ -13,20 +13,24 @@
 int do_handshake(int fd)
 {
     char buff[100];
-    struct Message res = {0};
+    struct Message res;
+    memset(&res, 0, sizeof(res));
 
-    if (recv_line(fd, buff, sizeof(buff)) <= 0)
-        return -1;
-
-    if (strcmp(buff, "HELLO") != 0)
+    if (recv_all(fd, &res, sizeof(res)) <= 0)
     {
-        res.code = CODE_INVALID_MSG;
+        perror("recv handshake failed");
+        return -1;
+    }
+
+    if (strcmp(res.payload, "HELLO") != 0)
+    {
+        res.code = CODE_HANDSHAKE_FAIL;
         sprintf(res.payload, "Invalid handshake");
         send_all(fd, &res, sizeof(res));
         return -1;
     }
 
-    res.code = CODE_CONNECT_OK;
+    res.code = CODE_HANDSHAKE_OK;
     sprintf(res.payload, "Device connected");
     send_all(fd, &res, sizeof(res));
     return 0;
