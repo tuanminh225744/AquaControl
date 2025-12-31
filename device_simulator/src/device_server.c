@@ -12,7 +12,6 @@
 
 int do_handshake(int fd)
 {
-    char buff[100];
     struct Message res;
     memset(&res, 0, sizeof(res));
 
