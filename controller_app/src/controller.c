@@ -151,7 +151,7 @@ void list_device()
     {
         if (devices[i].active == 1)
         {
-            printf("%d %s:%d\n", i, devices[i].ip, devices[i].port);
+            printf("%d: %s:%d\n", i, devices[i].ip, devices[i].port);
             count++;
         }
     }
@@ -327,214 +327,198 @@ void exit_device()
     printf("Exiting...\n");
 }
 
-int main()
+void show_menu()
 {
-    init_device_list();
-    int comman;
+    printf("\n========= MULTI-CONTROLLER =========\n");
 
-    while (1)
+    if (currentId != -1 && devices[currentId].active)
     {
-        printf("\n========= MULTI-CONTROLLER =========\n");
-        if (currentId != -1 && devices[currentId].active)
-        {
-            printf("STATUS: Connected to Slot [%d] | IP: %s\n",
-                   currentId, devices[currentId].ip);
+        printf("STATUS: Connected | Slot [%d] | IP: %s\n",
+               currentId, devices[currentId].ip);
 
-            if (devices[currentId].is_logged_in)
-            {
-                printf("Device: [%s] | ID: %d | Token: %d\n", devices[currentId].device_type, devices[currentId].device_id, devices[currentId].token);
-            }
-            else
-            {
-                printf("Device: Not loggin !\n");
-            }
+        if (devices[currentId].is_logged_in)
+        {
+            printf("Device: %s | ID: %d | Token: %d\n",
+                   devices[currentId].device_type,
+                   devices[currentId].device_id,
+                   devices[currentId].token);
         }
         else
         {
-            printf("STATUS: No Device selected \n");
+            printf("Device: Not logged in\n");
         }
-        printf("=============================\n");
-        printf("1. Connect new device\n");
-        printf("2. List of devices\n");
-        printf("=============================\n");
-        if (currentId != -1 && devices[currentId].active)
-        {
-            printf("3. Scan \n");
-            printf("4. Login \n");
+    }
+    else
+    {
+        printf("STATUS: No device selected\n");
+    }
 
-            if (devices[currentId].is_logged_in == 1)
+    printf("===================================\n");
+    printf("1. Connect new device\n");
+    printf("2. List devices\n");
+    printf("3. Scan device\n");
+
+    if (currentId != -1 && devices[currentId].active)
+    {
+        printf("-----------------------------------\n");
+        printf("4. Login\n");
+        printf("5. Logout\n");
+        printf("6. Change password\n");
+
+        if (devices[currentId].is_logged_in)
+        {
+            printf("-----------------------------------\n");
+            printf("7. Turn ON device\n");
+            printf("8. Turn OFF device\n");
+
+            if (strstr(devices[currentId].device_type, "WATERPUMP"))
             {
-                printf("=============================\n");
-                printf("5. Turn on \n");
-                printf("6. Turn off \n");
-                if (strstr(devices[currentId].device_type, "WATERPUMP") != NULL)
-                {
-                    printf("7. Set water pump device \n");
-                    printf("8. Get water pump device info \n");
-                    printf("17. Manual pump \n");
-                }
-                else if (strstr(devices[currentId].device_type, "AERATOR") != NULL)
-                {
-                    printf("9. Set aerator device \n");
-                    printf("10. Get aerator device info \n");
-                    printf("18. Manual aerate \n");
-                }
-                else if (strstr(devices[currentId].device_type, "FEEDER") != NULL)
-                {
-                    printf("11. Set feeder device \n");
-                    printf("12. Get feeder device info\n");
-                    printf("19. Manual feed \n");
-                }
-                else if (strstr(devices[currentId].device_type, "PHREGULATOR") != NULL)
-                {
-                    printf("13. Set PH regulator device \n");
-                    printf("14. Get PH regulator device info\n");
-                }
-                else if (strstr(devices[currentId].device_type, "SENSOR") != NULL)
-                {
-                    printf("15. Get sensor device info\n");
-                }
-                printf("16. Log out\n");
-                printf("20. Change password\n");
+                printf("9.  Set pump\n");
+                printf("10. Get pump info\n");
+                printf("11. Manual pump\n");
+            }
+            else if (strstr(devices[currentId].device_type, "AERATOR"))
+            {
+                printf("9.  Set aerator\n");
+                printf("10. Get aerator info\n");
+                printf("11. Manual aerate\n");
+            }
+            else if (strstr(devices[currentId].device_type, "FEEDER"))
+            {
+                printf("9.  Set feeder\n");
+                printf("10. Get feeder info\n");
+                printf("11. Manual feed\n");
+            }
+            else if (strstr(devices[currentId].device_type, "PHREGULATOR"))
+            {
+                printf("9.  Set PH regulator\n");
+                printf("10. Get PH info\n");
+            }
+            else if (strstr(devices[currentId].device_type, "SENSOR"))
+            {
+                printf("9. Get sensor info\n");
             }
         }
-        printf("0. Exit\n");
-        printf("======================================\n");
-        printf("Select: ");
+    }
 
-        if (scanf("%d", &comman) != 1)
-        {
-            clear_stdin();
-            continue;
-        }
+    printf("-----------------------------------\n");
+    printf("0. Exit\n");
+    printf("===================================\n");
+    printf("Select: ");
+}
+
+int main()
+{
+    init_device_list();
+    int command;
+
+    while (1)
+    {
+        show_menu();
+        scanf("%d", &command);
         clear_stdin();
-
-        switch (comman)
+        switch (command)
         {
         case 1: // CONNECT NEW DEVICE
         {
-            // connect_new_device();
             connect_devices();
             break;
         }
-        case 2: // LIST DEVICE
+
+        case 2: // LIST DEVICES
         {
             list_device();
             break;
         }
-        case 3: // SCAN
+
+        case 3: // SCAN DEVICE
         {
             scan_device();
             break;
         }
+
         case 4: // LOGIN
         {
             login_device();
             break;
         }
-        case 5: // TURN ON
-        {
-            turn_on_device(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
 
-        case 6: // TURN OFF
-        {
-            turn_off_device(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-
-        case 7: // SET PUMP DEVICE
-        {
-
-            set_pump_device(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-
-        case 8: // GET PUMP DEVICE INFO
-        {
-            get_pump_device_info(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-
-        case 17: // MANUAL PUMP
-        {
-            manual_pump(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-
-        case 9: // SET AERATOR DEVICE
-        {
-
-            set_aerator_device(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-
-        case 10: // GET AERATOR DEVICE INFO
-        {
-            get_aerator_device_info(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-
-        case 18: // MANUAL AERATE
-        {
-            manual_aerate(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-
-        case 11: // SET FEEDER DEVICE
-        {
-
-            set_feeder_device(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-
-        case 12: // GET FEEDER DEVICE INFO
-        {
-            get_feeder_device_info(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-
-        case 19: // MANUAL FEED
-        {
-            manual_feed(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-
-        case 13: // SET PH REGULATOR DEVICE
-        {
-
-            set_ph_regulator_device(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-        case 14: // GET PH REGULATOR DEVICE INFO
-        {
-            get_ph_regulator_device_info(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-        case 15: // GET SENSOR DEVICE INFO
-        {
-            get_sensor_device_info(devices[currentId].sockfd, devices[currentId].token);
-            break;
-        }
-        case 16: // LOGOUT
+        case 5: // LOGOUT
         {
             logout_device();
             break;
         }
-        case 20: // CHANGE PASSWORD
+
+        case 6: // CHANGE PASSWORD
         {
             change_password();
             break;
         }
-        case 0: // EXIT
+
+        case 7: // TURN ON
+        {
+            turn_on_device(
+                devices[currentId].sockfd,
+                devices[currentId].token);
+            break;
+        }
+
+        case 8: // TURN OFF
+        {
+            turn_off_device(
+                devices[currentId].sockfd,
+                devices[currentId].token);
+            break;
+        }
+
+        case 9:
+        {
+            if (strstr(devices[currentId].device_type, "WATERPUMP"))
+                set_pump_device(devices[currentId].sockfd, devices[currentId].token);
+            else if (strstr(devices[currentId].device_type, "AERATOR"))
+                set_aerator_device(devices[currentId].sockfd, devices[currentId].token);
+            else if (strstr(devices[currentId].device_type, "FEEDER"))
+                set_feeder_device(devices[currentId].sockfd, devices[currentId].token);
+            else if (strstr(devices[currentId].device_type, "PHREGULATOR"))
+                set_ph_regulator_device(devices[currentId].sockfd, devices[currentId].token);
+            else if (strstr(devices[currentId].device_type, "SENSOR"))
+                get_pond_info(devices[currentId].sockfd, devices[currentId].token);
+            break;
+        }
+
+        case 10:
+        {
+            if (strstr(devices[currentId].device_type, "WATERPUMP"))
+                get_pump_device_info(devices[currentId].sockfd, devices[currentId].token);
+            else if (strstr(devices[currentId].device_type, "AERATOR"))
+                get_aerator_device_info(devices[currentId].sockfd, devices[currentId].token);
+            else if (strstr(devices[currentId].device_type, "FEEDER"))
+                get_feeder_device_info(devices[currentId].sockfd, devices[currentId].token);
+            else if (strstr(devices[currentId].device_type, "PHREGULATOR"))
+                get_ph_regulator_device_info(devices[currentId].sockfd, devices[currentId].token);
+            break;
+        }
+
+        case 11:
+        {
+            if (strstr(devices[currentId].device_type, "WATERPUMP"))
+                manual_pump(devices[currentId].sockfd, devices[currentId].token);
+            else if (strstr(devices[currentId].device_type, "AERATOR"))
+                manual_aerate(devices[currentId].sockfd, devices[currentId].token);
+            else if (strstr(devices[currentId].device_type, "FEEDER"))
+                manual_feed(devices[currentId].sockfd, devices[currentId].token);
+            break;
+        }
+
+        case 0:
         {
             exit_device();
             return 0;
         }
+
         default:
         {
-            printf("[WARNING] Invalid Option!\n");
+            printf("[WARNING] Invalid option!\n");
             break;
         }
         }

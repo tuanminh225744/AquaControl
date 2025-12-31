@@ -55,18 +55,15 @@ void set_aerator_device(int sock, int token)
     printf("Enter RPM: ");
     scanf("%lf", &rpm);
 
-    // Nhập số lượng khoảng thời gian
     do
     {
         printf("Enter Number of Active Intervals per day (max %d): ", MAX_SCHEDULE_INTERVALS);
         scanf("%d", &num_intervals);
     } while (num_intervals < 0 || num_intervals > MAX_SCHEDULE_INTERVALS);
 
-    // Bắt đầu xây dựng payload với token và RPM
     // Format: [token] C=[rpm] N=[num_intervals] T1=HH:MM-HH:MM T2=HH:MM-HH:MM ...
     int offset = snprintf(msg.payload, sizeof(msg.payload), "%d C=%.2lf N=%d", token, rpm, num_intervals);
 
-    // Nhập và thêm các khoảng thời gian vào payload
     printf("Enter Specific Operating Intervals (Start Hour:Minute to End Hour:Minute):\n");
     for (int i = 0; i < num_intervals; i++)
     {
@@ -115,18 +112,15 @@ void set_feeder_device(int sock, int token)
 
     int num_feedings;
 
-    // Nhập số lần cho ăn
     do
     {
         printf("Enter Number of Feedings per day (max %d): ", MAX_FEEDING_TIMES);
         scanf("%d", &num_feedings);
     } while (num_feedings < 0 || num_feedings > MAX_FEEDING_TIMES);
 
-    // Bắt đầu xây dựng payload với token và số lần cho ăn
     // Format: [token] N=[num_feedings] T1=HH:MM T2=HH:MM ...
     int offset = snprintf(msg.payload, sizeof(msg.payload), "%d N=%d", token, num_feedings);
 
-    // Nhập và thêm các thời điểm cho ăn vào payload
     printf("Enter Specific Feeding Times (Hour:Minute):\n");
     for (int i = 0; i < num_feedings; i++)
     {
@@ -142,7 +136,6 @@ void set_feeder_device(int sock, int token)
             }
         } while (hour < 0 || hour > 23 || minute < 0 || minute > 59);
 
-        // Thêm thời điểm cho ăn vào chuỗi payload
         offset += snprintf(msg.payload + offset, sizeof(msg.payload) - offset, " T%d=%02d:%02d",
                            i + 1, hour, minute);
     }

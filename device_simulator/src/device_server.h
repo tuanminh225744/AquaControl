@@ -13,6 +13,7 @@ struct client_info
     handle_msg_fn handler;
 };
 
+// Thông tin phiên token
 typedef struct
 {
     int token;

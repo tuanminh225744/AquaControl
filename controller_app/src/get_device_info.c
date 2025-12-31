@@ -103,20 +103,20 @@ void get_ph_regulator_device_info(int sock, int token)
     }
 }
 
-void get_sensor_device_info(int sock, int token)
+void get_pond_info(int sock, int token)
 {
     struct Message msg;
     struct Message res;
     memset(&msg, 0, sizeof(msg));
 
-    msg.type = TYPE_GET_SENSOR_DEVICE_INFO;
+    msg.type = TYPE_GET_POND_INFO;
     snprintf(msg.payload, sizeof(msg.payload), "%d", token);
 
     send_all(sock, &msg, sizeof(msg));
 
     if (recv_all(sock, &res, sizeof(res)) > 0)
     {
-        if (res.code == CODE_GET_SENSOR_DEVICE_INFO_OK)
+        if (res.code == CODE_POND_INFO_OK)
         {
             printf("[SUCCESS] Get OK! %d %s\n", res.code, res.payload);
         }

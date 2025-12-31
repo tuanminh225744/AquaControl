@@ -36,6 +36,12 @@ const char *msg_type_to_string(int type)
         return "GET_PUMP_DEVICE_INFO";
     case TYPE_GET_AERATOR_DEVICE_INFO:
         return "GET_AERATOR_DEVICE_INFO";
+    case TYPE_GET_FEEDER_DEVICE_INFO:
+        return "GET_FEEDER_DEVICE_INFO";
+    case TYPE_GET_PH_REGULATOR_DEVICE_INFO:
+        return "GET_PH_REGULATOR_DEVICE_INFO";
+    case TYPE_GET_POND_INFO:
+        return "GET_POND_INFO";
     case TYPE_MANUAL_AERATE:
         return "MANUAL_AERATE";
     case TYPE_MANUAL_FEED:
@@ -142,7 +148,7 @@ void device_not_active_response(int sockfd, struct Message *req, char *file_name
     strcpy(res.payload, "Device is OFF");
 
     send_all(sockfd, &res, sizeof(res));
-    handle_write_device_log(sockfd, file_name, res.type, res.payload, res.code, res.payload);
+    handle_write_device_log(sockfd, file_name, req->type, req->payload, res.code, res.payload);
     printf("[DEVICE OFF] Responded Code %d %s\n", res.code, res.payload);
 }
 
