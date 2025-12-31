@@ -4,34 +4,6 @@
 #include <string.h>
 #include <stdio.h>
 
-// 1. ĐỊNH NGHĨA HÀM ĐỌC TỪNG DÒNG
-int recv_line(int sock, char *buffer, int size)
-{
-    int i = 0;
-    char c = '\0';
-    while (i < size - 1)
-    {
-        int n = recv(sock, &c, 1, 0);
-        if (n <= 0)
-        {
-            return -1;
-        }
-        if (c == '\r')
-        {
-            char next;
-            if (recv(sock, &next, 1, MSG_PEEK) > 0 && next == '\n')
-            {
-                recv(sock, &next, 1, 0); // Đọc bỏ \n
-                break;
-            }
-        }
-        buffer[i++] = c;
-    }
-    buffer[i] = '\0';
-    return i;
-}
-
-// 2. ĐỊNH NGHĨA HÀM ĐỌC ĐỦ BYTES
 int recv_all(int sock, void *buffer, int size)
 {
     int total = 0;
@@ -68,12 +40,4 @@ int send_all(int sock, void *buffer, int size)
         bytes_left -= n;
     }
     return total;
-}
-
-// 3. ĐỊNH NGHĨA HÀM GỬI TỪNG DÒNG
-int send_line(int sock, char *message)
-{
-    char buffer[1024];
-    int len = snprintf(buffer, sizeof(buffer), "%s\r\n", message);
-    return send_all(sock, buffer, len);
 }

@@ -5,8 +5,6 @@
 #include <unistd.h>
 
 // -- Xu ly truyen dong ---
-int recv_line(int sock, char *buffer, int size);
 int recv_all(int sock, void *buffer, int size);
 int send_all(int sock, void *buffer, int size);
-int send_line(int sock, char *message);
 #endif
